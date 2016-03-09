@@ -26,3 +26,5 @@ map <D-A-UP> <C-w>W
 " When you create a new file, it’s not indexed by default. Here a way to
 " reindex everything by simply pressing <Leader>+r:
 noremap <Leader>r :CommandTFlush<CR>
+
+set statusline=%t
