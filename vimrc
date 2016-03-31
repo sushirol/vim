@@ -23,6 +23,9 @@ map <D-A-LEFT> <C-w>h
 map <D-A-DOWN> <C-w><C-w>
 map <D-A-UP> <C-w>W
 
+" .md file
+au BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+
 " When you create a new file, it’s not indexed by default. Here a way to
 " reindex everything by simply pressing <Leader>+r:
 noremap <Leader>t :FZF<CR>
