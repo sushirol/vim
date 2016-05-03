@@ -39,6 +39,7 @@ noremap <Leader>t :FZF<CR>
 set rtp+=~/.fzf
 
 " Tmuxline configuration
+" Command :Tmuxline 
 let g:tmuxline_separators = {
     \ 'left' : '',
     \ 'left_alt': '>',
