@@ -28,3 +28,6 @@
 [submodule "bundle/vim-yang"]
 	path = bundle/vim-yang
 	url = https://github.com/fach/vim-yang.git
+[submodule "bundle/tmuxline"]
+	path = bundle/tmuxline
+	url = https://github.com/edkolev/tmuxline.vim.git
