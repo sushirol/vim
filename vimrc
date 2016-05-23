@@ -19,6 +19,7 @@ set autoindent
 set hlsearch
 
 set number
+set relativenumber
 
 "  statuslines
 set laststatus=2
