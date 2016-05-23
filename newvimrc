@@ -298,10 +298,10 @@ syntax on
 
 " Color scheme. Thanks to the CSApprox plugin, I may use the same scheme in
 " both graphical and terminal Vims.
-colorscheme koehler
+"colorscheme koehler
 
 " Use a dark background.
-set background=dark
+"set background=dark
 
 augroup colors_and_highlighting
 au!
@@ -603,10 +603,6 @@ nnoremap <silent> gl :call <SID>OpenLinkUnderCursor()<CR>
 
 " A text object for the entire file ("a file").
 onoremap af :<C-u>normal! ggVG<CR>
-
-" Git leader commands.
-" They require https://github.com/tpope/vim-fugitive.
-noremap <Leader>gbl :Gblame<CR>
 
 " Man pages.
 " The nnoremap <Leader>man command is defined for every language separately.
@@ -1084,6 +1080,8 @@ au BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
 "  fancy tmux status line
 " ------------------------------------------------------------------------------
 
+" Tmuxline configuration
+" Command :Tmuxline
 let g:tmuxline_separators = {
 	\ 'left' : '',
 	\ 'left_alt': '>',
