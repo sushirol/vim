@@ -13,6 +13,10 @@ filetype off " Pathogen needs to run before 'plugin on'.
 execute pathogen#infect()
 filetype plugin on
 
+" The leader and local-leader characters.
+let mapleader = ' '
+let maplocalleader = ' '
+
 " reload vimrc
 map <leader>s :source ~/.vimrc<CR>
 
@@ -94,47 +98,47 @@ set showtabline=1       " Display a tabline only if there are at least two tabs.
 " Use a custom function that displays tab numbers in the tabline. Based on
 " http://superuser.com/a/477221.
 function! MyTabLine()
-	let s = ''
-	let wn = ''
-	let t = tabpagenr()
-	let i = 1
-	while i <= tabpagenr('$')
-		let buflist = tabpagebuflist(i)
-		let winnr = tabpagewinnr(i)
-		let s .= '%' . i . 'T'
-		let s .= (i == t ? '%1*' : '%2*')
-		let s .= ' '
-		let wn = tabpagewinnr(i,'$')
-		let s .= '%#TabNum#'
-		let s .= i
-		let s .= (i == t ? '%#TabLineSel#' : '%#TabLine#')
-		let bufnr = buflist[winnr - 1]
-		let file = bufname(bufnr)
-		let buftype = getbufvar(bufnr, 'buftype')
-		if buftype == 'nofile'
-			if file =~ '\/.'
-				let file = substitute(file, '.*\/\ze.', '', '')
-			endif
-		else
-			" Shorten file name to include only first letters of each
-			" directory.
-			let file = pathshorten(file)
-		endif
-		if file == ''
-			let file = '[No Name]'
-		endif
-		let s .= ' ' . file . ' '
-		let i = i + 1
-		" Add '[+]' if one of the buffers in the tab page is modified.
-		for bufnr in buflist
-			if getbufvar(bufnr, '&modified')
-				let s .= '[+]'
-				break
-			endif
-		endfor
-	endwhile
-	let s .= '%T%#TabLineFill#%='
-	return s
+    let s = ''
+    let wn = ''
+    let t = tabpagenr()
+    let i = 1
+    while i <= tabpagenr('$')
+        let buflist = tabpagebuflist(i)
+        let winnr = tabpagewinnr(i)
+        let s .= '%' . i . 'T'
+        let s .= (i == t ? '%1*' : '%2*')
+        let s .= ' '
+        let wn = tabpagewinnr(i,'$')
+        let s .= '%#TabNum#'
+        let s .= i
+        let s .= (i == t ? '%#TabLineSel#' : '%#TabLine#')
+        let bufnr = buflist[winnr - 1]
+        let file = bufname(bufnr)
+        let buftype = getbufvar(bufnr, 'buftype')
+        if buftype == 'nofile'
+            if file =~ '\/.'
+                let file = substitute(file, '.*\/\ze.', '', '')
+            endif
+        else
+            " Shorten file name to include only first letters of each
+            " directory.
+            let file = pathshorten(file)
+        endif
+        if file == ''
+            let file = '[No Name]'
+        endif
+        let s .= ' ' . file . ' '
+        let i = i + 1
+        " Add '[+]' if one of the buffers in the tab page is modified.
+        for bufnr in buflist
+            if getbufvar(bufnr, '&modified')
+                let s .= '[+]'
+                break
+            endif
+        endfor
+    endwhile
+    let s .= '%T%#TabLineFill#%='
+    return s
 endfunction
 set tabline=%!MyTabLine()
 highlight link TabNum Special
@@ -193,9 +197,6 @@ set nofoldenable
 
 " No bell sounds.
 set noerrorbells visualbell t_vb=
-if has('gui_running')
-	au GUIEnter * set visualbell t_vb=
-endif
 
 " Encoding and end of line.
 " Default file encoding for new files.
@@ -213,80 +214,50 @@ set ffs=unix,dos,mac
 " Spellchecker.
 " Disable spellchecking by default (F1 toggles it).
 set nospell
-" Language (use Shift+F1 to toggle between the Czech and English language).
-set spelllang=en_us,en_gb
-" Spellfile (can add/delete custom words to/from the dictionary) is enabled
-" by default and stores into ~/.vim/spell/{spelllang}.{encoding}.add).
 
-" Graphical Vim.
-if has('gui_running')
-	" Font.
-	set guifont=Monospace\ 10.5
+" Lower the timeout when entering normal mode from insert mode.
+set ttimeoutlen=0
 
-	" GUI options:
-	"  - aA: Enable autoselection.
-	"  - c: Use console dialogs.
-	"  - i: Use a Vim icon.
-	" Menubar, toolbar, scrollbars etc. are disabled.
-	set guioptions=aAci
+" Check for changes in files more often. This makes Vim in terminal behaves
+" more like GVim, although sadly not the same.
+augroup file_change_check
+au!
+au BufEnter * silent! checktime
+augroup end
 
-	" Leave no pixels around the GVim window.
-	set guiheadroom=0
-
-	" Enable mouse usage.
-	set mouse=a
-
-	" Hide mouse cursor when editing.
-	set mousehide
-
-	" Disable cursor blinking.
-	set guicursor=a:blinkon0
-" Vim in terminal.
-else
-	" Lower the timeout when entering normal mode from insert mode.
-	set ttimeoutlen=0
-
-	" Check for changes in files more often. This makes Vim in terminal behaves
-	" more like GVim, although sadly not the same.
-	augroup file_change_check
-	au!
-	au BufEnter * silent! checktime
-	augroup end
-
-	" Make some key combinations work when running Vim in Tmux.
-	if exists('$TMUX')
-		execute "set <xUp>=\e[1;*A"
-		execute "set <xDown>=\e[1;*B"
-		execute "set <xRight>=\e[1;*C"
-		execute "set <xLeft>=\e[1;*D"
-		execute "set <xHome>=\e[1;*H"
-		execute "set <xEnd>=\e[1;*F"
-		execute "set <Insert>=\e[2;*~"
-		execute "set <Delete>=\e[3;*~"
-		execute "set <PageUp>=\e[5;*~"
-		execute "set <PageDown>=\e[6;*~"
-		if exists('$MC_TMPDIR')
-			" Running inside Midnight Commander.
-			execute "set <F1>=\e[1;*P"
-			execute "set <F2>=\e[1;*Q"
-			execute "set <F3>=\e[1;*R"
-			execute "set <F4>=\e[1;*S"
-		else
-			" Not running inside Midnight Commander.
-			execute "set <xF1>=\e[1;*P"
-			execute "set <xF2>=\e[1;*Q"
-			execute "set <xF3>=\e[1;*R"
-			execute "set <xF4>=\e[1;*S"
-		endif
-		execute "set <F5>=\e[15;*~"
-		execute "set <F6>=\e[17;*~"
-		execute "set <F7>=\e[18;*~"
-		execute "set <F8>=\e[19;*~"
-		execute "set <F9>=\e[20;*~"
-		execute "set <F10>=\e[21;*~"
-		execute "set <F11>=\e[23;*~"
-		execute "set <F12>=\e[24;*~"
-	endif
+" Make some key combinations work when running Vim in Tmux.
+if exists('$TMUX')
+    execute "set <xUp>=\e[1;*A"
+    execute "set <xDown>=\e[1;*B"
+    execute "set <xRight>=\e[1;*C"
+    execute "set <xLeft>=\e[1;*D"
+    execute "set <xHome>=\e[1;*H"
+    execute "set <xEnd>=\e[1;*F"
+    execute "set <Insert>=\e[2;*~"
+    execute "set <Delete>=\e[3;*~"
+    execute "set <PageUp>=\e[5;*~"
+    execute "set <PageDown>=\e[6;*~"
+    if exists('$MC_TMPDIR')
+        " Running inside Midnight Commander.
+        execute "set <F1>=\e[1;*P"
+        execute "set <F2>=\e[1;*Q"
+        execute "set <F3>=\e[1;*R"
+        execute "set <F4>=\e[1;*S"
+    else
+        " Not running inside Midnight Commander.
+        execute "set <xF1>=\e[1;*P"
+        execute "set <xF2>=\e[1;*Q"
+        execute "set <xF3>=\e[1;*R"
+        execute "set <xF4>=\e[1;*S"
+    endif
+    execute "set <F5>=\e[15;*~"
+    execute "set <F6>=\e[17;*~"
+    execute "set <F7>=\e[18;*~"
+    execute "set <F8>=\e[19;*~"
+    execute "set <F9>=\e[20;*~"
+    execute "set <F10>=\e[21;*~"
+    execute "set <F11>=\e[23;*~"
+    execute "set <F12>=\e[24;*~"
 endif
 
 "------------------------------------------------------------------------------
@@ -295,13 +266,6 @@ endif
 
 " Syntax highlighting.
 syntax on
-
-" Color scheme. Thanks to the CSApprox plugin, I may use the same scheme in
-" both graphical and terminal Vims.
-"colorscheme koehler
-
-" Use a dark background.
-"set background=dark
 
 augroup colors_and_highlighting
 au!
@@ -355,25 +319,20 @@ augroup end
 " Function keys.
 "------------------------------------------------------------------------------
 
-" F1: Toggle spell checker.
-nnoremap <silent> <F1> :set spell!<CR>:set spell?<CR>
-
-" F2: Toggle the display of unprintable characters.
-nnoremap <silent> <F2> :set list!<CR>:set list?<CR>
 
 " Shift+F2: Toggle highlighting of characters exceeding textwidth.
 function! s:ToggleExceedingCharsHighlight()
-	if exists('w:long_line_match')
-		silent! call matchdelete(w:long_line_match)
-		unlet w:long_line_match
-		echo 'Disable highlighting.'
-	elseif &textwidth > 0
-		let w:long_line_match=matchadd('ExceedCharsGroup', '\%>' . &textwidth . 'v.\+', -1)
-		echo 'Enable highlighting after ' . &textwidth . ' characters.'
-	else
-		let w:long_line_match=matchadd('ExceedCharsGroup', '\%>80v.\+', -1)
-		echo 'Enable highlighting after 80 characters.'
-	endif
+    if exists('w:long_line_match')
+        silent! call matchdelete(w:long_line_match)
+        unlet w:long_line_match
+        echo 'Disable highlighting.'
+    elseif &textwidth > 0
+        let w:long_line_match=matchadd('ExceedCharsGroup', '\%>' . &textwidth . 'v.\+', -1)
+        echo 'Enable highlighting after ' . &textwidth . ' characters.'
+    else
+        let w:long_line_match=matchadd('ExceedCharsGroup', '\%>80v.\+', -1)
+        echo 'Enable highlighting after 80 characters.'
+    endif
 endfunction
 nnoremap <silent> <S-F2> :call <SID>ToggleExceedingCharsHighlight()<CR>
 
@@ -382,56 +341,15 @@ nnoremap <silent> <F3> :set nowrap!<CR>:set nowrap?<CR>
 
 " Shift+F3: Toggle the display of colorcolumn.
 function! s:ToggleColorColumn()
-	if &colorcolumn > 0
-		set colorcolumn=""
-	elseif &textwidth > 0
-		let &colorcolumn = &textwidth
-	else
-		set colorcolumn=80
-	endif
+    if &colorcolumn > 0
+        set colorcolumn=""
+    elseif &textwidth > 0
+        let &colorcolumn = &textwidth
+    else
+        set colorcolumn=80
+    endif
 endfunction
 nnoremap <silent> <S-F3> :call <SID>ToggleColorColumn()<CR>
-
-" F4: Toggle hexdump view of binary files.
-function! s:ToggleHexdumpView()
-	if &filetype ==# 'xxd'
-		" Turn off hexdump view.
-		silent! :%!xxd -r
-		set filetype=
-	else
-		" Turn on hexdump view.
-		silent! :%!xxd
-		set filetype=xxd
-	endif
-endfunction
-nnoremap <silent> <F4> :call <SID>ToggleHexdumpView()<CR>
-
-" Shift+F4: Toggle objdump view of binary files.
-function! s:ToggleObjdumpView()
-	if &filetype ==# 'objdump'
-		" Turn off objdump view.
-		" Replace the buffer with the original content of the buffer, stored in
-		" the Z register.
-		normal! ggVG"ZP
-		set filetype=
-		set noreadonly
-	else
-		" Turn on objdump view.
-		" Cut the original content of the buffer into the Z register so I can
-		" use it later to restore the original content.
-		normal! ggVG"Zd
-		" Get the output from objdump and paste it into the buffer.
-		silent! :read !objdump -S %
-		" Go to the beginning of the file.
-		normal! ggdd
-		" Set a proper file type to enable syntax highlighting through
-		" http://www.vim.org/scripts/script.php?script_id=530.
-		set filetype=objdump
-		" Prevent accidental overwrites.
-		set readonly
-	endif
-endfunction
-nnoremap <silent> <S-F4> :call <SID>ToggleObjdumpView()<CR>
 
 " F6: Toggle relative/absolute numbers.
 nnoremap <silent> <F6> :set relativenumber!<CR>:set relativenumber?<CR>
@@ -445,9 +363,12 @@ nnoremap <silent> <F6> :set relativenumber!<CR>:set relativenumber?<CR>
 " F10: Run the current script.
 " The mapping is defined separately for each file type.
 
-" F8: Make.
+" F11: Make.
 " Executes :make and opens the quickfix window if there is an error.
-nnoremap <F8> mp :echo 'Making...' <Bar> silent make <Bar> botright cw<CR><C-w><Up>
+nnoremap <F11> mp :echo 'Making...' <Bar> silent make <Bar> botright cw<CR><C-w><Up>
+
+" F8: Disabling file type based indentation for all file types
+"nnoremap <F8> :setl noai nocin nosi inde=<CR>
 
 "------------------------------------------------------------------------------
 " General-purpose commands.
@@ -459,10 +380,6 @@ command! -nargs=1 SilentExecute execute ':silent !' . <q-args> | execute ':redra
 "------------------------------------------------------------------------------
 " Abbreviations and other mappings.
 "------------------------------------------------------------------------------
-
-" The leader and local-leader characters.
-let mapleader = ' '
-let maplocalleader = ' '
 
 
 " General command aliases.
@@ -516,14 +433,14 @@ nnoremap ' `
 nnoremap ` '
 
 " Disable arrows keys (I use exclusively h/j/k/l).
-"noremap <Up> <Nop>
-"noremap <Down> <Nop>
-"noremap <Left> <Nop>
-"noremap <Right> <Nop>
-"inoremap <Up> <Nop>
-"inoremap <Down> <Nop>
-"inoremap <Left> <Nop>
-"inoremap <Right> <Nop>
+noremap <Up> <Nop>
+noremap <Down> <Nop>
+noremap <Left> <Nop>
+noremap <Right> <Nop>
+inoremap <Up> <Nop>
+inoremap <Down> <Nop>
+inoremap <Left> <Nop>
+inoremap <Right> <Nop>
 
 " Make j and k move by virtual lines instead of physical lines, but only when
 " not used in the count mode (e.g. 3j). This is great when 'wrap' and
@@ -543,11 +460,11 @@ noremap <Leader>j J
 " the indentation whitespace.
 " Based on http://vi.stackexchange.com/a/440.
 function! s:JoinWithoutSpaces()
-	normal! gJ
-	" Remove any whitespace.
-	if matchstr(getline('.'), '\%' . col('.') . 'c.') =~ '\s'
-		normal! dw
-	endif
+    normal! gJ
+    " Remove any whitespace.
+    if matchstr(getline('.'), '\%' . col('.') . 'c.') =~ '\s'
+        normal! dw
+    endif
 endfunction
 noremap <silent> <Leader>J :call <SID>JoinWithoutSpaces()<CR>
 
@@ -566,40 +483,29 @@ inoremap <silent> <C-_> </<C-x><C-o><C-x>
 " Note: I do not use https://github.com/christoomey/vim-tmux-navigator because
 "       it does not work when vim is run over ssh.
 if exists('$TMUX')
-	function! s:TmuxOrSplitSwitch(wincmd, tmuxdir)
-		let previous_winnr = winnr()
-		silent! execute 'wincmd ' . a:wincmd
-		if previous_winnr == winnr()
-			call system('tmux select-pane -' . a:tmuxdir)
-			redraw!
-		endif
-	endfunction
+    function! s:TmuxOrSplitSwitch(wincmd, tmuxdir)
+        let previous_winnr = winnr()
+        silent! execute 'wincmd ' . a:wincmd
+        if previous_winnr == winnr()
+            call system('tmux select-pane -' . a:tmuxdir)
+            redraw!
+        endif
+    endfunction
 
-	let previous_title = substitute(system("tmux display-message -p '#{pane_title}'"), '\n', '', '')
-	let &t_ti = "\<Esc>]2;vim\<Esc>\\" . &t_ti
-	let &t_te = "\<Esc>]2;" . previous_title . "\<Esc>\\" . &t_te
+    let previous_title = substitute(system("tmux display-message -p '#{pane_title}'"), '\n', '', '')
+    let &t_ti = "\<Esc>]2;vim\<Esc>\\" . &t_ti
+    let &t_te = "\<Esc>]2;" . previous_title . "\<Esc>\\" . &t_te
 
-	nnoremap <silent> <C-h> :call <SID>TmuxOrSplitSwitch('h', 'L')<CR>
-	nnoremap <silent> <C-j> :call <SID>TmuxOrSplitSwitch('j', 'D')<CR>
-	nnoremap <silent> <C-k> :call <SID>TmuxOrSplitSwitch('k', 'U')<CR>
-	nnoremap <silent> <C-l> :call <SID>TmuxOrSplitSwitch('l', 'R')<CR>
+    nnoremap <silent> <C-h> :call <SID>TmuxOrSplitSwitch('h', 'L')<CR>
+    nnoremap <silent> <C-j> :call <SID>TmuxOrSplitSwitch('j', 'D')<CR>
+    nnoremap <silent> <C-k> :call <SID>TmuxOrSplitSwitch('k', 'U')<CR>
+    nnoremap <silent> <C-l> :call <SID>TmuxOrSplitSwitch('l', 'R')<CR>
 else
-	noremap <C-h> <C-w>h
-	noremap <C-j> <C-w>j
-	noremap <C-k> <C-w>k
-	noremap <C-l> <C-w>l
+    noremap <C-h> <C-w>h
+    noremap <C-j> <C-w>j
+    noremap <C-k> <C-w>k
+    noremap <C-l> <C-w>l
 endif
-
-" Open a link under the cursor in a web browser (similar to gx, but faster).
-let s:web_browser_path='/usr/bin/firefox'
-function! s:OpenLinkUnderCursor()
-	let curr_line = getline('.')
-	let link = matchstr(curr_line, '\(http\|https\|ftp\|file\)://[^ )"]*')
-	if link != ''
-		exec ':silent !' . s:web_browser_path . ' ' . '"' . link . '"'
-	endif
-endfunction
-nnoremap <silent> gl :call <SID>OpenLinkUnderCursor()<CR>
 
 " A text object for the entire file ("a file").
 onoremap af :<C-u>normal! ggVG<CR>
@@ -623,7 +529,7 @@ nnoremap <Leader>cc :%s/\<<C-r><C-w>\>/<C-r><C-w>
 vnoremap <Leader>cc y:%s/<C-r>"/<C-r>"
 
 " Replace tabs with spaces.
-nnoremap <Leader>rts :%s/	/    /g<CR>
+nnoremap <Leader>rts :%s/    /    /g<CR>
 
 " Remove ANSI color escape codes.
 nnoremap <Leader>rac :%s/<C-v><Esc>\[\(\d\{1,2}\(;\d\{1,2}\)\{0,2\}\)\?[m\|K]//g<CR>
@@ -631,14 +537,14 @@ nnoremap <Leader>rac :%s/<C-v><Esc>\[\(\d\{1,2}\(;\d\{1,2}\)\{0,2\}\)\?[m\|K]//g
 " Makes the current file executable.
 " Based on http://vim.wikia.com/wiki/Setting_file_attributes_without_reloading_a_buffer
 function! s:MakeFileExecutable()
-	let fname = expand('%:p')
-	checktime
-	execute 'au FileChangedShell ' . fname . ' :echo'
-	silent !chmod a+x %
-	checktime
-	execute 'au! FileChangedShell ' . fname
-	" Fix display issues in terminal Vim.
-	redraw!
+    let fname = expand('%:p')
+    checktime
+    execute 'au FileChangedShell ' . fname . ' :echo'
+    silent !chmod a+x %
+    checktime
+    execute 'au! FileChangedShell ' . fname
+    " Fix display issues in terminal Vim.
+    redraw!
 endfunction
 nnoremap <Leader>mfx :call <SID>MakeFileExecutable()<CR>
 
@@ -654,84 +560,6 @@ nnoremap <Leader>bib :tabe *.bib<CR>
 " Plugins.
 "------------------------------------------------------------------------------
 
-"------------------------------------
-" vim-grepper: Helps you win at grep.
-"------------------------------------
-let g:grepper={}
-" Use the quickfix window.
-let g:grepper.quickfix=1
-" Open the quickfix window after the search finishes.
-let g:grepper.open=1
-" Switch to the quickfix window after the search finishes.
-let g:grepper.switch=1
-" Show the prompt by default.
-let g:grepper.prompt=1
-" Supported tools (use 'git' before 'ag').
-let g:grepper.tools=['git', 'ag', 'ack', 'grep', 'findstr', 'sift', 'pt']
-" Works like /, but uses vim-grepper to do the searching.
-nnoremap <Leader>/ :Grepper<CR>
-" Works like *, but uses vim-grepper to do the searching.
-nnoremap <Leader>* :Grepper -cword -noprompt<CR>
-
-"--------------------------------------------------------
-" netrw: Network oriented reading, writing, and browsing.
-"--------------------------------------------------------
-" Disable the top banner.
-let g:netrw_banner=0
-" Tree-like view.
-let g:netrw_liststyle=3
-" Use a smaller window.
-let g:netrw_winsize=25
-" Do not perform any magic during sorting (like putting .h files together),
-" except for listing directories first.
-let g:netrw_sort_sequence='[\/]$'
-
-"-----------------------------
-" UltiSnips: Snippets for Vim.
-"-----------------------------
-let g:snips_author='Petr Zemek <s3rvac@gmail.com>'
-let g:UltiSnipsEditSplit='vertical'
-let g:UltiSnipsEnableSnipMate='no'
-let g:UltiSnipsSnippetDirectories=[$HOME . '/.vim/snippets']
-let g:UltiSnipsExpandTrigger='<Tab>'
-let g:UltiSnipsJumpForwardTrigger='<Tab>'
-let g:UltiSnipsJumpBackwardTrigger='<S-Tab>'
-
-"----------------------------------------
-" python: Syntax highlighting for Python.
-"----------------------------------------
-let g:python_highlight_builtins=0
-let g:python_highlight_exceptions=0
-let g:python_highlight_doctests=1
-let g:python_highlight_indent_errors=0 " I use my own highlighting of these.
-let g:python_highlight_space_errors=0
-let g:python_highlight_string_formatting=0
-let g:python_highlight_string_format=0
-let g:python_highlight_string_templates=0
-let g:python_slow_sync=1
-let g:python_print_as_function=1
-
-"-----------------------------------------
-" Command-T: Fast file navigation for VIM.
-"-----------------------------------------
-let g:CommandTMaxCachedDirectories=0 " Do not limit caching.
-let g:CommandTMatchWindowReverse=1 " Show the entries in reverse order.
-let g:CommandTMaxHeight=10 " Show at most 10 matches.
-hi CommandTHighlightColor guibg=darkblue guifg=white
-let g:CommandTHighlightColor='CommandTHighlightColor' " Custom highlight color.
-let g:CommandTTraverseSCM='pwd' " Use Vim's present working directory as the root.
-let g:CommandTCancelMap=['<Esc>', '<C-c>'] " Keys to close the search window.
-
-" ---------------------------------------------------------
-" vim-sort-motion: Vim mapping for sorting a range of text.
-" ---------------------------------------------------------
-let g:sort_motion_flags = 'u' " Remove duplicates while sorting.
-
-"---------
-" xmledit.
-"---------
-let g:xml_tag_completion_map = '<C-l>'
-
 "------------------------------------------------------------------------------
 " File-type specific settings and other autocommands.
 "------------------------------------------------------------------------------
@@ -740,12 +568,12 @@ augroup trailing_whitespace
 au!
 " Automatically remove trailing whitespace when saving a file.
 function! s:RemoveTrailingWhitespace()
-	let pattern = '\\s\\+$'
-	if &ft ==# 'mail'
-		" Do not remove the space from the email signature marker ("-- \n").
-		let pattern = '\\(^--\\)\\@<!' . pattern
-	endif
-	call setline(1, map(getline(1, '$'), 'substitute(v:val, "' . pattern . '", "", "")'))
+    let pattern = '\\s\\+$'
+    if &ft ==# 'mail'
+        " Do not remove the space from the email signature marker ("-- \n").
+        let pattern = '\\(^--\\)\\@<!' . pattern
+    endif
+    call setline(1, map(getline(1, '$'), 'substitute(v:val, "' . pattern . '", "", "")'))
 endfunction
 au BufWritePre * :if !&bin | call s:RemoveTrailingWhitespace()
 " Add a new command :W that can be used to write a file without removing
@@ -779,9 +607,9 @@ au!
 " If there is a Makefile in the current working directory,
 " use the `make` command instead of a concrete program.
 function! s:SetMakeprg()
-	if filereadable('Makefile') || filereadable('makefile')
-		set makeprg='make'
-	endif
+    if filereadable('Makefile') || filereadable('makefile')
+        set makeprg='make'
+    endif
 endfunction
 au FileType * call s:SetMakeprg()
 augroup end
@@ -803,96 +631,96 @@ au FileType c,cpp nnoremap <buffer> <Leader>Inc /^#include "<CR>:nohlsearch<CR>:
 
 " Open both a .c|cpp|cc file and the corresponding .h file in a new tab.
 function! s:GetCFile(base_name)
-	" a:base_name should end with a dot (".")
-	if filereadable(a:base_name . 'cc')
-		return a:base_name . 'cc'
-	elseif filereadable(a:base_name . 'cpp')
-		return a:base_name . 'cpp'
-	else
-		return a:base_name . 'c'
-	endif
+    " a:base_name should end with a dot (".")
+    if filereadable(a:base_name . 'cc')
+        return a:base_name . 'cc'
+    elseif filereadable(a:base_name . 'cpp')
+        return a:base_name . 'cpp'
+    else
+        return a:base_name . 'c'
+    endif
 endfunction
 function! s:OpenCAndHInNewTab(base_name)
-	if a:base_name =~ '\.h$'
-		let h_file = a:base_name
-		let c_file = s:GetCFile(substitute(a:base_name, '\\.h$', '.', ''))
-	elseif a:base_name =~ '\.cc$'
-		let h_file = substitute(a:base_name, '\.cc$', '.h', '')
-		let c_file = a:base_name
-	elseif a:base_name =~ '\.cpp$'
-		let h_file = substitute(a:base_name, '\.cpp$', '.h', '')
-		let c_file = a:base_name
-	elseif a:base_name =~ '\.c$'
-		let h_file = substitute(a:base_name, '\.c$', '.h', '')
-		let c_file = a:base_name
-	elseif a:base_name =~ '\.$'
-		let h_file = a:base_name . 'h'
-		let c_file = s:GetCFile(a:base_name)
-	else
-		let h_file = a:base_name . '.h'
-		let c_file = s:GetCFile(a:base_name . '.')
-	endif
-	if filereadable(c_file)
-		if filereadable(h_file)
-			exec 'tabnew ' . c_file
-			exec 'vsplit ' . h_file
-		else
-			exec 'tabnew ' . c_file
-		endif
-	elseif filereadable(h_file)
-		exec 'tabnew ' . h_file
-	else
-		echo 'No file to open.'
-	endif
+    if a:base_name =~ '\.h$'
+        let h_file = a:base_name
+        let c_file = s:GetCFile(substitute(a:base_name, '\\.h$', '.', ''))
+    elseif a:base_name =~ '\.cc$'
+        let h_file = substitute(a:base_name, '\.cc$', '.h', '')
+        let c_file = a:base_name
+    elseif a:base_name =~ '\.cpp$'
+        let h_file = substitute(a:base_name, '\.cpp$', '.h', '')
+        let c_file = a:base_name
+    elseif a:base_name =~ '\.c$'
+        let h_file = substitute(a:base_name, '\.c$', '.h', '')
+        let c_file = a:base_name
+    elseif a:base_name =~ '\.$'
+        let h_file = a:base_name . 'h'
+        let c_file = s:GetCFile(a:base_name)
+    else
+        let h_file = a:base_name . '.h'
+        let c_file = s:GetCFile(a:base_name . '.')
+    endif
+    if filereadable(c_file)
+        if filereadable(h_file)
+            exec 'tabnew ' . c_file
+            exec 'vsplit ' . h_file
+        else
+            exec 'tabnew ' . c_file
+        endif
+    elseif filereadable(h_file)
+        exec 'tabnew ' . h_file
+    else
+        echo 'No file to open.'
+    endif
 endfunction
 au FileType c,cpp command! -nargs=1 -complete=file TN :call s:OpenCAndHInNewTab(<q-args>)
 
 " Splits the current window by showing the .{c,cc,cpp} file on the left-hand
 " side and the corresponding .h file on the right-hand side.
 function! s:SplitCOrHFile()
-	if bufname('') =~ '\.\(cpp\|cc\|c\)$'
-		let c_file = bufname('')
-		let h_file = substitute(bufname(''), '\.\(cpp\|cc\|c\)$', '.h', '')
-		if filereadable(h_file)
-			exec 'edit ' . c_file
-			exec 'vsplit ' . h_file
-		else
-			echo 'The corresponding .h file does not exist.'
-		endif
-	elseif bufname('') =~ '\.h$'
-		let h_file = bufname('')
-		let c_file = s:GetCFile(substitute(bufname(''), '\.h$', '.', ''))
-		if filereadable(c_file)
-			exec 'edit ' . c_file
-			exec 'vsplit ' . h_file
-		else
-			echo 'The corresponding .{c,cc,cpp} file does not exist.'
-		endif
-	else
-		echo 'There is no corresponding source file.'
-	endif
+    if bufname('') =~ '\.\(cpp\|cc\|c\)$'
+        let c_file = bufname('')
+        let h_file = substitute(bufname(''), '\.\(cpp\|cc\|c\)$', '.h', '')
+        if filereadable(h_file)
+            exec 'edit ' . c_file
+            exec 'vsplit ' . h_file
+        else
+            echo 'The corresponding .h file does not exist.'
+        endif
+    elseif bufname('') =~ '\.h$'
+        let h_file = bufname('')
+        let c_file = s:GetCFile(substitute(bufname(''), '\.h$', '.', ''))
+        if filereadable(c_file)
+            exec 'edit ' . c_file
+            exec 'vsplit ' . h_file
+        else
+            echo 'The corresponding .{c,cc,cpp} file does not exist.'
+        endif
+    else
+        echo 'There is no corresponding source file.'
+    endif
 endfunction
 au FileType c,cpp nnoremap <buffer> <Leader>as :call <SID>SplitCOrHFile()<CR>
 
 " Alternates between a .{c,cc,cpp} file and a .h file.
 function! s:AlternateCOrHFile()
-	if bufname('') =~ '\.\(cpp\|cc\|c\)$'
-		let h_file = substitute(bufname(''), '\.\(cpp\|cc\|c\)$', '.h', '')
-		if filereadable(h_file)
-			exec 'edit ' . h_file
-		else
-			echo 'The corresponding .h file does not exist.'
-		endif
-	elseif bufname('') =~ '\.h$'
-		let c_file = s:GetCFile(substitute(bufname(''), '\.h$', '.', ''))
-		if filereadable(c_file)
-			exec 'edit ' . c_file
-		else
-			echo 'The corresponding .{c,cc,cpp} file does not exist.'
-		endif
-	else
-		echo 'There is no corresponding source file.'
-	endif
+    if bufname('') =~ '\.\(cpp\|cc\|c\)$'
+        let h_file = substitute(bufname(''), '\.\(cpp\|cc\|c\)$', '.h', '')
+        if filereadable(h_file)
+            exec 'edit ' . h_file
+        else
+            echo 'The corresponding .h file does not exist.'
+        endif
+    elseif bufname('') =~ '\.h$'
+        let c_file = s:GetCFile(substitute(bufname(''), '\.h$', '.', ''))
+        if filereadable(c_file)
+            exec 'edit ' . c_file
+        else
+            echo 'The corresponding .{c,cc,cpp} file does not exist.'
+        endif
+    else
+        echo 'There is no corresponding source file.'
+    endif
 endfunction
 au FileType c,cpp nnoremap <buffer> <Leader>ac :call <SID>AlternateCOrHFile()<CR>
 
@@ -904,36 +732,10 @@ au FileType cpp nnoremap <buffer> <F10> :w<CR>:!clear; g++ -std=c++14 -pedantic 
 au FileType cpp nnoremap <buffer> <S-F10> :w<CR>:!clear; clang++ -std=c++14 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
 augroup end
 
-" PHP
-augroup php
-au!
-" Use <Leader>man to display manual pages for the function under cursor in a browser.
-au FileType php nnoremap <buffer> <silent> <Leader>man :call <SID>OpenLink('http://php.net/'.expand('<cword>'))<CR>
-" Make "gq" on comments work properly.
-au FileType php setl comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,bO:///,O://,:#
-augroup end
-
-" LaTeX
-augroup latex
-au!
-au FileType tex,plaintex setl spell    " Enable spell checking.
-" Compilation.
-" This errorformat presumes that you are using `pdflatex -file-line-error`
-" to compile .tex files.
-au FileType tex,plaintex setl errorformat=%f:%l:\ %m
-augroup end
-
 " Shell
 augroup sh
 au!
 au FileType sh setl noexpandtab  " Use tabs instead of spaces.
-augroup end
-
-" MySQL
-augroup mysql
-au!
-" Allow "gq" on comments to work properly.
-au FileType mysql setl comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,bO:--
 augroup end
 
 " Python
@@ -961,13 +763,13 @@ au FileType python nnoremap <buffer> <F10> :w<CR>:!clear; python %<CR>
 " Splits the current window by showing the corresponding test file on the
 " right-hand side.
 function! s:ShowPythonTestsInSplit()
-	" For e.g. main_package/subpackage/module.py, the tests are in
-	" tests/subpackage/module_tests.py (a convention that I use in my
-	" projects).
-	let module_rel_path = expand('%')
-	let tests_rel_path = substitute(module_rel_path, '\.\py$', '_tests.py', '')
-	let tests_rel_path = substitute(tests_rel_path, '^[^/]*/', 'tests/', '')
-	exec 'vsplit ' . tests_rel_path
+    " For e.g. main_package/subpackage/module.py, the tests are in
+    " tests/subpackage/module_tests.py (a convention that I use in my
+    " projects).
+    let module_rel_path = expand('%')
+    let tests_rel_path = substitute(module_rel_path, '\.\py$', '_tests.py', '')
+    let tests_rel_path = substitute(tests_rel_path, '^[^/]*/', 'tests/', '')
+    exec 'vsplit ' . tests_rel_path
 endfunction
 " The mapping is mimicking <Leader>as for c,cpp.
 au FileType python nnoremap <buffer> <Leader>as :call <SID>ShowPythonTestsInSplit()<CR>
@@ -987,52 +789,11 @@ au FileType ruby setl shiftwidth=2  " Shift by 2 spaces.
 au FileType ruby nnoremap <buffer> <F10> :w<CR>:!clear; ruby %<CR>
 augroup end
 
-" Haskell
-augroup haskell
-au!
-" The following settings are based on these guidelines:
-"  - https://github.com/tibbe/haskell-style-guide/blob/master/haskell-style.md
-"  - http://urchin.earth.li/~ian/style/haskell.html
-"  - http://cs.caltech.edu/courses/cs11/material/haskell/misc/haskell_style_guide.html
-au FileType haskell setl expandtab     " Use spaces instead of tabs.
-au FileType haskell setl tabstop=4     " A tab counts for 4 spaces.
-au FileType haskell setl softtabstop=4 " Causes backspace to delete 4 spaces.
-au FileType haskell setl shiftwidth=4  " Shift by 4 spaces.
-augroup end
-
-" LLVM
-augroup llvm
-au!
-au FileType llvm setl expandtab     " Use spaces instead of tabs.
-au FileType llvm setl tabstop=2     " A tab counts for 2 spaces.
-au FileType llvm setl softtabstop=2 " Causes backspace to delete 2 spaces.
-au FileType llvm setl shiftwidth=2  " Shift by 2 spaces.
-" Make "gq" on comments working properly.
-au FileType llvm setl comments=bO:;
-augroup end
-
 " Git commits
 augroup gitcommit
 au!
 au FileType gitcommit setl spell     " Enable spellchecking.
 au FileType gitcommit setl expandtab " Use spaces instead of tabs.
-augroup end
-
-" Dokuwiki
-augroup dokuwiki
-au!
-au FileType dokuwiki setl spell         " Enable spell checking.
-au FileType dokuwiki setl expandtab     " Use spaces instead of tabs.
-au FileType dokuwiki setl tabstop=2     " Lists are indented with 2 spaces.
-au FileType dokuwiki setl softtabstop=2 " Causes backspace to delete 2 spaces.
-au FileType dokuwiki setl shiftwidth=2  " Shift by 2 spaces.
-augroup end
-
-" reStructured Text
-augroup rst
-au!
-au FileType rst setl spell              " Enable spellchecking.
-au FileType rst setl expandtab          " Use spaces instead of tabs.
 augroup end
 
 " Markdown
@@ -1066,12 +827,12 @@ nnoremap :Vsp :vsp
 nnoremap :Tn :tabnew
 
 " ------------------------------------------------------------------------------
-" Arrow keys
+" arrow keys
 " ------------------------------------------------------------------------------
-map <D-A-RIGHT> <C-w>l
-map <D-A-LEFT> <C-w>h
-map <D-A-DOWN> <C-w><C-w>
-map <D-A-UP> <C-w>W
+"map <D-A-RIGHT> <C-w>l
+"map <D-A-LEFT> <C-w>h
+"map <D-A-DOWN> <C-w><C-w>
+"map <D-A-UP> <C-w>W
 
 " set md file as a markdown file
 au BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
@@ -1083,11 +844,11 @@ au BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
 " Tmuxline configuration
 " Command :Tmuxline
 let g:tmuxline_separators = {
-	\ 'left' : '',
-	\ 'left_alt': '>',
-	\ 'right' : '',
-	\ 'right_alt' : '<',
-	\ 'space' : ' '}
+    \ 'left' : '',
+    \ 'left_alt': '>',
+    \ 'right' : '',
+    \ 'right_alt' : '<',
+    \ 'space' : ' '}
 
 " ------------------------------------------------------------------------------
 "  persistant undo
@@ -1098,10 +859,10 @@ let &runtimepath.=','.vimDir
 
 " Keep undo history across sessions by storing it in a file
 if has('persistent_undo')
-	let myUndoDir = expand(vimDir . '/undodir')
-	" Create dirs
-	call system('mkdir ' . vimDir)
-	call system('mkdir ' . myUndoDir)
-	let &undodir = myUndoDir
-	set undofile
+    let myUndoDir = expand(vimDir . '/undodir')
+    " Create dirs
+    call system('mkdir ' . vimDir)
+    call system('mkdir ' . myUndoDir)
+    let &undodir = myUndoDir
+    set undofile
 endif
