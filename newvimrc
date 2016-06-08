@@ -394,15 +394,6 @@ cnoreabbrev tocs !trs en:cs
 " Quit with Q instead of :q!.
 noremap <silent> Q :q!<CR>
 
-" Quicksave all buffers.
-" (Use both :w and :wa to force write of the currently edited buffer, even if
-" there are no changes. This forces removal of trailing whitespace from the
-" buffer and also overwrites of the file even if it has changed, which is
-" sometimes handy.)
-nnoremap <silent> <C-s> :w<CR>:wa<CR>
-inoremap <silent> <C-s> <Esc>:w<CR><Esc>:wa<CR>
-vnoremap <silent> <C-s> <Esc>:w<CR><Esc>:wa<CR>
-
 " Make Ctrl-e jump to the end of the line in the insert mode.
 inoremap <C-e> <C-o>$
 
@@ -513,10 +504,6 @@ onoremap af :<C-u>normal! ggVG<CR>
 " Man pages.
 " The nnoremap <Leader>man command is defined for every language separately.
 
-" Wrap function arguments.
-" Requires the vim-argwrap plugin (https://github.com/FooSoft/vim-argwrap).
-nnoremap <silent> <Leader>wa :ArgWrap<CR>
-
 " Check for changes in all buffers, automatically reload them, and redraw.
 nnoremap <silent> <Leader>rr :set autoread <Bar> checktime <Bar> redraw! <Bar> set noautoread<CR>
 
@@ -525,8 +512,8 @@ nnoremap <Leader>rc :%s/\<<C-r><C-w>\>/
 vnoremap <Leader>rc y:%s/<C-r>"/
 
 " Changes the current word (and all occurrences).
-nnoremap <Leader>cc :%s/\<<C-r><C-w>\>/<C-r><C-w>
-vnoremap <Leader>cc y:%s/<C-r>"/<C-r>"
+nnoremap <Leader>ec :%s/\<<C-r><C-w>\>/<C-r><C-w>
+vnoremap <Leader>ec y:%s/<C-r>"/<C-r>"
 
 " Replace tabs with spaces.
 nnoremap <Leader>rts :%s/    /    /g<CR>
@@ -552,13 +539,25 @@ nnoremap <Leader>mfx :call <SID>MakeFileExecutable()<CR>
 nnoremap <Leader>sni :exec 'tabe ~/.vim/snippets/' . &filetype . '.snippets'<CR>
 nnoremap <Leader>bash :tabe ~/.bashrc<CR>
 nnoremap <Leader>vim :tabe ~/.vimrc<CR>
-" Open the corresponding BibTeX file. It is assumed that there is only a single
-" .bib file.
-nnoremap <Leader>bib :tabe *.bib<CR>
 
 "------------------------------------------------------------------------------
 " Plugins.
 "------------------------------------------------------------------------------
+
+"------------------------------------------------------------------------------
+" FZF.
+"------------------------------------------------------------------------------
+"Open files in horizontal split
+nnoremap <silent> <Leader>h :call fzf#run({
+\   'down': '40%',
+\   'sink': 'botright split' })<CR>
+
+"" Open files in vertical horizontal split
+nnoremap <silent> <Leader>v :call fzf#run({
+\   'right': winwidth('.') / 2,
+\   'sink':  'vertical botright split' })<CR>
+
+
 
 "------------------------------------------------------------------------------
 " File-type specific settings and other autocommands.
@@ -820,6 +819,7 @@ iabbrev teh the
 iabbrev hte the
 
 " Command mistypes.
+nnoremap :W :w
 nnoremap :E :e
 nnoremap :Q :q
 nnoremap :Set :set
