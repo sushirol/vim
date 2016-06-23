@@ -193,7 +193,7 @@ set backspace=indent,eol,start
 set sessionoptions=blank,buffers,curdir,globals,help,localoptions,resize,tabpages,winpos,winsize
 
 " Disable folds by default (i.e. automatically open all folds).
-set nofoldenable
+"set nofoldenable
 
 " No bell sounds.
 set noerrorbells visualbell t_vb=
@@ -539,6 +539,7 @@ nnoremap <Leader>mfx :call <SID>MakeFileExecutable()<CR>
 nnoremap <Leader>sni :exec 'tabe ~/.vim/snippets/' . &filetype . '.snippets'<CR>
 nnoremap <Leader>bash :tabe ~/.bashrc<CR>
 nnoremap <Leader>vim :tabe ~/.vimrc<CR>
+nnoremap <Leader>tmux :tabe ~/.tmux.conf<CR>
 
 "------------------------------------------------------------------------------
 " Plugins.
@@ -547,17 +548,26 @@ nnoremap <Leader>vim :tabe ~/.vimrc<CR>
 "------------------------------------------------------------------------------
 " FZF.
 "------------------------------------------------------------------------------
+
+" locate command integration
+command! -nargs=1 Locate call fzf#run(
+      \ {'source': 'locate <q-args>', 'sink': 'e', 'options': '-m'})<CR>
+
 "Open files in horizontal split
-nnoremap <silent> <Leader>h :call fzf#run({
+nnoremap <silent> <Leader>fzfh :call fzf#run({
 \   'down': '40%',
 \   'sink': 'botright split' })<CR>
 
 "" Open files in vertical horizontal split
-nnoremap <silent> <Leader>v :call fzf#run({
+nnoremap <silent> <Leader>fzfv :call fzf#run({
 \   'right': winwidth('.') / 2,
 \   'sink':  'vertical botright split' })<CR>
 
-
+nnoremap <silent> <Leader>fzfo :call fzf#run({
+\  'source':  v:oldfiles,
+\  'sink':    'e',
+\  'options': '-m -x +s',
+\  'down':    '40%'})<CR>
 
 "------------------------------------------------------------------------------
 " File-type specific settings and other autocommands.
