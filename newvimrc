@@ -624,6 +624,13 @@ au FileType * call s:SetMakeprg()
 augroup end
 
 " C and C++
+" The following settings are based on these guidelines:
+"  - python.org/dev/peps/pep-0008
+au FileType c,cpp setl expandtab     " Use spaces instead of tabs.
+au FileType c,cpp setl tabstop=2     " A tab counts for 4 spaces.
+au FileType c,cpp setl softtabstop=2 " Causes backspace to delete 4 spaces.
+au FileType c,cpp setl shiftwidth=2  " Shift by 4 spaces.
+
 augroup c_cpp
 au!
 " Use the man ftplugin to display pages from manual.
