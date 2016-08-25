@@ -40,3 +40,9 @@
 [submodule "vim-colors/vim-hybrid"]
 	path = vim-colors/vim-hybrid
 	url = https://github.com/w0ng/vim-hybrid.git
+[submodule "themes/gruvbox"]
+	path = themes/gruvbox
+	url = https://github.com/morhetz/gruvbox.git
+[submodule "themes/papercolor-theme"]
+	path = themes/papercolor-theme
+	url = https://github.com/NLKNguyen/papercolor-theme.git
