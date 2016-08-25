@@ -8,6 +8,9 @@ alias mv='mv -i'
 #alias ls='ls -lG --color'
 alias cp='cp -v'
 
+export PS1="\W $ "
+export TERM=screen-256color
+
 # Source global definitions
 if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
