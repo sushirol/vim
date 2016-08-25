@@ -746,7 +746,7 @@ set background=dark
 "colorscheme PaperColor
 colorscheme gruvbox
 "let g:lightline = { 'colorscheme': 'PaperColor' }
-let g:lightline = { 'colorscheme': 'gruvbox' }
+"let g:lightline = { 'colorscheme': 'gruvbox' }
 
 " ------------------------------------------------------------------------------
 "  fancy tmux status line
