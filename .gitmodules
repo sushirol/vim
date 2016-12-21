@@ -1,9 +1,3 @@
-[submodule "bundle/vim-ruby"]
-	path = bundle/vim-ruby
-	url = https://github.com/vim-ruby/vim-ruby.git
-[submodule "bundle/command-t"]
-	path = bundle/command-t
-	url = https://github.com/wincent/command-t.git
 [submodule "bundle/lightline.vim"]
 	path = bundle/lightline.vim
 	url = https://github.com/itchyny/lightline.vim.git
@@ -22,18 +16,6 @@
 [submodule "bundle/vim-gitgutter"]
 	path = bundle/vim-gitgutter
 	url = https://github.com/airblade/vim-gitgutter.git
-[submodule "bundle/vim-surround"]
-	path = bundle/vim-surround
-	url = https://github.com/tpope/vim-surround.git
-[submodule "bundle/vim-yang"]
-	path = bundle/vim-yang
-	url = https://github.com/fach/vim-yang.git
-[submodule "bundle/tmuxline"]
-	path = bundle/tmuxline
-	url = https://github.com/edkolev/tmuxline.vim.git
-[submodule "bundle/vim-pasta"]
-	path = bundle/vim-pasta
-	url = https://github.com/sickill/vim-pasta.git
 [submodule "colors/vim-hybrid"]
 	path = colors/vim-hybrid
 	url = https://github.com/w0ng/vim-hybrid.git
@@ -43,3 +25,9 @@
 [submodule "themes/papercolor-theme"]
 	path = themes/papercolor-theme
 	url = https://github.com/NLKNguyen/papercolor-theme.git
+[submodule "bundle/tagbar"]
+	path = bundle/tagbar
+	url = https://github.com/majutsushi/tagbar.git
+[submodule "bundle/easymotion"]
+	path = bundle/easymotion
+	url = https://github.com/easymotion/vim-easymotion.git
