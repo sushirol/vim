@@ -1,3 +1,9 @@
 vim manager - pathogen
 git submodule init
 git submodule update
+
+---
+to update submodules later
+
+git submodule update --recursive --remote
+
