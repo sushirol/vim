@@ -278,12 +278,12 @@ endif
 
 " TagBar
 "nmap <F8> :TagbarToggle<CR>
-nnoremap <silent> <F12>t :TagbarToggle<CR>
+"nnoremap <silent> <F12>t :TagbarToggle<CR>
 "map <C-T> :TagbarToggle<CR>
 " NERDTree
 "map <C-n> :NERDTreeToggle<CR>
 "nnoremap <silent> <Leader>nt :NERDTreeToggle<CR>
-nnoremap <silent> <F12>n :NERDTreeToggle<CR>
+"nnoremap <silent> <F12>n :NERDTreeToggle<CR>
 nnoremap <silent> <F12>b :ToggleBufExplorer<CR>
 
 
@@ -381,8 +381,8 @@ noremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 noremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
 
 " Jump to the previous/next tab.
-noremap <silent> J gT
-noremap <silent> K gt
+"noremap <silent> J gT
+"noremap <silent> K gt
 
 " Join lines by <Leader>+j because I use J to go to the previous tab.
 noremap <Leader>j J
@@ -469,21 +469,73 @@ nnoremap <Leader>tmux :tabe ~/.tmux.conf<CR>
 command! -nargs=1 Locate call fzf#run(
       \ {'source': 'locate <q-args>', 'sink': 'e', 'options': '-m'})<CR>
 
-"Open files in horizontal split
-nnoremap <silent> <Leader>fzfh :call fzf#run({
-\   'down': '40%',
-\   'sink': 'botright split' })<CR>
+""Open files in horizontal split
+"nnoremap <silent> <Leader>S :call fzf#run({
+"\   'down': '40%',
+"\   'sink': 'botright split' })<CR>
 
 "" Open files in vertical horizontal split
-nnoremap <silent> <Leader>fzfv :call fzf#run({
+nnoremap <silent> <Leader>v :call fzf#run({
 \   'right': winwidth('.') / 2,
 \   'sink':  'vertical botright split' })<CR>
 
-nnoremap <silent> <Leader>fzfo :call fzf#run({
+nnoremap <silent> <Leader>B :call fzf#run({
 \  'source':  v:oldfiles,
 \  'sink':    'e',
 \  'options': '-m -x +s',
 \  'down':    '40%'})<CR>
+
+function! s:buflist()
+  redir => ls
+  silent ls
+  redir END
+  return split(ls, '\n')
+endfunction
+
+function! s:bufopen(e)
+  execute 'buffer' matchstr(a:e, '^[ 0-9]*')
+endfunction
+
+nnoremap <silent> <Leader><Enter> :call fzf#run({
+\   'source':  reverse(<sid>buflist()),
+\   'sink':    function('<sid>bufopen'),
+\   'options': '+m',
+\   'down':    len(<sid>buflist()) + 2
+\ })<CR>
+
+"This version better handles same tags across different files.
+
+function! s:tags_sink(line)
+  let parts = split(a:line, '\t\zs')
+  let excmd = matchstr(parts[2:], '^.*\ze;"\t')
+  execute 'silent e' parts[1][:-2]
+  let [magic, &magic] = [&magic, 0]
+  execute excmd
+  let &magic = magic
+endfunction
+
+function! s:tags()
+  if empty(tagfiles())
+    echohl WarningMsg
+    echom 'Preparing tags'
+    echohl None
+    call system('ctags -R')
+  endif
+
+  call fzf#run({
+  \ 'source':  'cat '.join(map(tagfiles(), 'fnamemodify(v:val, ":S")')).
+  \            '| grep -v -a ^!',
+  \ 'options': '+m -d "\t" --with-nth 1,4.. -n 1 --tiebreak=index',
+  \ 'down':    '40%',
+  \ 'sink':    function('s:tags_sink')})
+endfunction
+
+command! Tags call s:tags()
+nnoremap <silent> <Leader>tags :Tags<CR>
+
+" Locate
+command! -nargs=1 -bang Locate call fzf#run(fzf#wrap(
+      \ {'source': 'locate <q-args>', 'options': '-m'}, <bang>0))
 
 "------------------------------------------------------------------------------
 " File-type specific settings and other autocommands.
@@ -523,8 +575,6 @@ au!
 " Use the man ftplugin to display pages from manual.
 au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 au FileType c,cpp runtime ftplugin/man.vim
-" Use <Leader>man to display manual pages for the function under cursor.
-au FileType c,cpp nnoremap <buffer> <silent> <Leader>man :Man 3 <cword><CR>
 " Use astyle for = command indention.
 "au FileType c,cpp exec 'setl equalprg=astyle\ --mode=c\ --options=' . $HOME . '/.vim/astyle/c-cpp.options'
 " Allow "gq" on comments to work properly.
