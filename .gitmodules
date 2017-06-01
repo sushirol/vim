@@ -28,9 +28,10 @@
 [submodule "bundle/easymotion"]
 	path = bundle/easymotion
 	url = https://github.com/easymotion/vim-easymotion.git
-;[submodule "bundle/cscope-maps"]
-	;path = bundle/cscope-maps
-	;url = https://github.com/joe-skb7/cscope-maps.git
+[submodule "bundle/cscope-maps"]
+	path = bundle/cscope-maps
+	url = https://github.com/joe-skb7/cscope-maps.git
+	ignore = dirty
 [submodule "bundle/nerdtree"]
 	path = bundle/nerdtree
 	url = https://github.com/scrooloose/nerdtree.git
