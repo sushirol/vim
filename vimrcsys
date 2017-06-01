@@ -113,9 +113,6 @@ autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 autocmd InsertLeave * match ExtraWhitespace /\s\+$/
 autocmd BufWinLeave * call clearmatches()
 
-" enable linux coding style
-"nnoremap <silent> <leader>linux :LinuxCodingStyle<cr>
-
 " Tabline.
 set showtabline=1       " Display a tabline only if there are at least two tabs.
 " Use a custom function that displays tab numbers in the tabline. Based on
@@ -275,17 +272,6 @@ if exists('$TMUX')
     execute "set <F11>=\e[23;*~"
     execute "set <F12>=\e[24;*~"
 endif
-
-" TagBar
-"nmap <F8> :TagbarToggle<CR>
-"nnoremap <silent> <F12>t :TagbarToggle<CR>
-"map <C-T> :TagbarToggle<CR>
-" NERDTree
-"map <C-n> :NERDTreeToggle<CR>
-"nnoremap <silent> <Leader>nt :NERDTreeToggle<CR>
-"nnoremap <silent> <F12>n :NERDTreeToggle<CR>
-nnoremap <silent> <F12>b :ToggleBufExplorer<CR>
-
 
 "------------------------------------------------------------------------------
 " Colors.
@@ -475,11 +461,11 @@ command! -nargs=1 Locate call fzf#run(
 "\   'sink': 'botright split' })<CR>
 
 "" Open files in vertical horizontal split
-nnoremap <silent> <Leader>v :call fzf#run({
+nnoremap <silent> <Leader>fv :call fzf#run({
 \   'right': winwidth('.') / 2,
 \   'sink':  'vertical botright split' })<CR>
 
-nnoremap <silent> <Leader>B :call fzf#run({
+nnoremap <silent> <Leader>fo :call fzf#run({
 \  'source':  v:oldfiles,
 \  'sink':    'e',
 \  'options': '-m -x +s',
@@ -496,7 +482,7 @@ function! s:bufopen(e)
   execute 'buffer' matchstr(a:e, '^[ 0-9]*')
 endfunction
 
-nnoremap <silent> <Leader><Enter> :call fzf#run({
+nnoremap <silent> <Leader>fb :call fzf#run({
 \   'source':  reverse(<sid>buflist()),
 \   'sink':    function('<sid>bufopen'),
 \   'options': '+m',
@@ -531,7 +517,7 @@ function! s:tags()
 endfunction
 
 command! Tags call s:tags()
-nnoremap <silent> <Leader>tags :Tags<CR>
+nnoremap <silent> <Leader>ft :Tags<CR>
 
 " Locate
 command! -nargs=1 -bang Locate call fzf#run(fzf#wrap(

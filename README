@@ -7,3 +7,6 @@ to update submodules later
 
 git submodule update --recursive --remote
 
+
+-----
+replace byobu with ~/.byobu
