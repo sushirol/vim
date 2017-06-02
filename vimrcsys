@@ -19,7 +19,7 @@ let maplocalleader = ' '
 
 " reload vimrc
 map <leader>s :source ~/.vimrc<CR>
-map <Esc><Esc> :w<CR>
+"map <Esc><Esc> :w<CR>
 
 "------------------------------------------------------------------------------
 " General.
@@ -432,13 +432,12 @@ nnoremap <Leader>ec :%s/\<<C-r><C-w>\>/<C-r><C-w>
 vnoremap <Leader>ec y:%s/<C-r>"/<C-r>"
 
 " Replace tabs with spaces.
-nnoremap <Leader>rts :%s/    /    /g<CR>
+" nnoremap <Leader>rts :%s/    /    /g<CR>
 
 " Remove ANSI color escape codes.
 nnoremap <Leader>rac :%s/<C-v><Esc>\[\(\d\{1,2}\(;\d\{1,2}\)\{0,2\}\)\?[m\|K]//g<CR>
 
 " Opening files in tabs.
-nnoremap <Leader>sni :exec 'tabe ~/.vim/snippets/' . &filetype . '.snippets'<CR>
 nnoremap <Leader>bash :tabe ~/.bashrc<CR>
 nnoremap <Leader>vim :tabe ~/.vimrc<CR>
 nnoremap <Leader>tmux :tabe ~/.tmux.conf<CR>
@@ -450,78 +449,60 @@ nnoremap <Leader>tmux :tabe ~/.tmux.conf<CR>
 "------------------------------------------------------------------------------
 " FZF.
 "------------------------------------------------------------------------------
+"
+"let g:fzf_layout = { 'window': 'enew' }
+"let g:fzf_layout = { 'down': '~40%' }
+let g:fzf_layout = { 'window': '10split enew' }
 
-" locate command integration
-command! -nargs=1 Locate call fzf#run(
-      \ {'source': 'locate <q-args>', 'sink': 'e', 'options': '-m'})<CR>
 
-""Open files in horizontal split
-"nnoremap <silent> <Leader>S :call fzf#run({
-"\   'down': '40%',
-"\   'sink': 'botright split' })<CR>
-
-"" Open files in vertical horizontal split
-nnoremap <silent> <Leader>fv :call fzf#run({
-\   'right': winwidth('.') / 2,
-\   'sink':  'vertical botright split' })<CR>
-
-nnoremap <silent> <Leader>fo :call fzf#run({
-\  'source':  v:oldfiles,
-\  'sink':    'e',
-\  'options': '-m -x +s',
-\  'down':    '40%'})<CR>
-
-function! s:buflist()
-  redir => ls
-  silent ls
-  redir END
-  return split(ls, '\n')
-endfunction
-
-function! s:bufopen(e)
-  execute 'buffer' matchstr(a:e, '^[ 0-9]*')
-endfunction
-
-nnoremap <silent> <Leader>fb :call fzf#run({
-\   'source':  reverse(<sid>buflist()),
-\   'sink':    function('<sid>bufopen'),
-\   'options': '+m',
-\   'down':    len(<sid>buflist()) + 2
-\ })<CR>
-
-"This version better handles same tags across different files.
-
-function! s:tags_sink(line)
-  let parts = split(a:line, '\t\zs')
-  let excmd = matchstr(parts[2:], '^.*\ze;"\t')
-  execute 'silent e' parts[1][:-2]
-  let [magic, &magic] = [&magic, 0]
-  execute excmd
-  let &magic = magic
-endfunction
-
-function! s:tags()
-  if empty(tagfiles())
-    echohl WarningMsg
-    echom 'Preparing tags'
-    echohl None
-    call system('ctags -R')
-  endif
-
-  call fzf#run({
-  \ 'source':  'cat '.join(map(tagfiles(), 'fnamemodify(v:val, ":S")')).
-  \            '| grep -v -a ^!',
-  \ 'options': '+m -d "\t" --with-nth 1,4.. -n 1 --tiebreak=index',
-  \ 'down':    '40%',
-  \ 'sink':    function('s:tags_sink')})
-endfunction
-
-command! Tags call s:tags()
 nnoremap <silent> <Leader>ft :Tags<CR>
+nnoremap <silent> <leader>ff :Files<CR>
+nnoremap <silent> <leader>fb :Buffers<CR>
+nnoremap <silent> <leader>fw :Windows<CR>
+nnoremap <silent> <leader>fl :BLines<CR>
+nnoremap <silent> <leader>f? :History<CR>
+nnoremap <silent> <leader>f/ :execute 'Ag ' . input('Ag/')<CR>
+nnoremap <silent> <leader>f. :AgIn
 
-" Locate
-command! -nargs=1 -bang Locate call fzf#run(fzf#wrap(
-      \ {'source': 'locate <q-args>', 'options': '-m'}, <bang>0))
+"------------------------------------------------------------------------------
+" FZF vim
+"------------------------------------------------------------------------------
+"
+"" This is the default extra key bindings
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+" Customize fzf colors to match your color scheme
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+
+
+" Mapping selecting mappings
+nmap <leader><tab> <plug>(fzf-maps-n)
+xmap <leader><tab> <plug>(fzf-maps-x)
+omap <leader><tab> <plug>(fzf-maps-o)
+
+" Insert mode completion
+imap <c-x><c-k> <plug>(fzf-complete-word)
+imap <c-x><c-f> <plug>(fzf-complete-path)
+imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+imap <c-x><c-l> <plug>(fzf-complete-line)
+
+" Advanced customization using autoload functions
+inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 
 "------------------------------------------------------------------------------
 " File-type specific settings and other autocommands.
