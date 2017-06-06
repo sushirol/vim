@@ -113,56 +113,6 @@ autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 autocmd InsertLeave * match ExtraWhitespace /\s\+$/
 autocmd BufWinLeave * call clearmatches()
 
-" Tabline.
-set showtabline=1       " Display a tabline only if there are at least two tabs.
-" Use a custom function that displays tab numbers in the tabline. Based on
-" http://superuser.com/a/477221.
-function! MyTabLine()
-    let s = ''
-    let wn = ''
-    let t = tabpagenr()
-    let i = 1
-    while i <= tabpagenr('$')
-        let buflist = tabpagebuflist(i)
-        let winnr = tabpagewinnr(i)
-        let s .= '%' . i . 'T'
-        let s .= (i == t ? '%1*' : '%2*')
-        let s .= ' '
-        let wn = tabpagewinnr(i,'$')
-        let s .= '%#TabNum#'
-        let s .= i
-        let s .= (i == t ? '%#TabLineSel#' : '%#TabLine#')
-        let bufnr = buflist[winnr - 1]
-        let file = bufname(bufnr)
-        let buftype = getbufvar(bufnr, 'buftype')
-        if buftype == 'nofile'
-            if file =~ '\/.'
-                let file = substitute(file, '.*\/\ze.', '', '')
-            endif
-        else
-            " Shorten file name to include only first letters of each
-            " directory.
-            let file = pathshorten(file)
-        endif
-        if file == ''
-            let file = '[No Name]'
-        endif
-        let s .= ' ' . file . ' '
-        let i = i + 1
-        " Add '[+]' if one of the buffers in the tab page is modified.
-        for bufnr in buflist
-            if getbufvar(bufnr, '&modified')
-                let s .= '[+]'
-                break
-            endif
-        endfor
-    endwhile
-    let s .= '%T%#TabLineFill#%='
-    return s
-endfunction
-set tabline=%!MyTabLine()
-highlight link TabNum Special
-
 " Statusline.
 set laststatus=2        " Always display a statusline.
 set noruler             " Since I'm using a statusline, disable ruler.
@@ -216,7 +166,7 @@ set noerrorbells visualbell t_vb=
 setglobal fenc=utf-8
 " Detect file encoding when opening a file and try to choose from the following
 " encoding list (to check what file encoding was selected run ":set fenc").
-set fencs=ucs-bom,utf-8,cp1250,latin2,latin1
+" set fencs=ucs-bom,utf-8,cp1250,latin2,latin1
 " Internal encoding used by Vim buffers, help and commands.
 set enc=utf-8
 " Terminal encoding used for input and terminal display.
@@ -333,7 +283,6 @@ augroup end
 "------------------------------------------------------------------------------
 
 " General command aliases.
-cnoreabbrev tn tabnew
 cnoreabbrev csf cs find
 
 " Make Ctrl-e jump to the end of the line in the insert mode.
@@ -365,10 +314,6 @@ inoremap <Right> <Nop>
 " Based on http://stackoverflow.com/a/21000307/2580955
 noremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 noremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
-
-" Jump to the previous/next tab.
-"noremap <silent> J gT
-"noremap <silent> K gt
 
 " Join lines by <Leader>+j because I use J to go to the previous tab.
 noremap <Leader>j J
@@ -438,9 +383,9 @@ vnoremap <Leader>ec y:%s/<C-r>"/<C-r>"
 nnoremap <Leader>rac :%s/<C-v><Esc>\[\(\d\{1,2}\(;\d\{1,2}\)\{0,2\}\)\?[m\|K]//g<CR>
 
 " Opening files in tabs.
-nnoremap <Leader>bash :tabe ~/.bashrc<CR>
-nnoremap <Leader>vim :tabe ~/.vimrc<CR>
-nnoremap <Leader>tmux :tabe ~/.tmux.conf<CR>
+nnoremap <Leader>bash :e ~/.bashrc<CR>
+nnoremap <Leader>vim :e ~/.vimrc<CR>
+nnoremap <Leader>tmux :e ~/.tmux.conf<CR>
 
 "------------------------------------------------------------------------------
 " Plugins.
@@ -523,60 +468,6 @@ au BufWritePre * :if !&bin | call s:RemoveTrailingWhitespace()
 " Add a new command :W that can be used to write a file without removing
 " trailing whitespace (sometimes, this is handy).
 command! W :set eventignore=BufWritePre | w | set eventignore=""
-augroup end
-
-augroup makeprg
-au!
-" If there is a Makefile in the current working directory,
-" use the `make` command instead of a concrete program.
-function! s:SetMakeprg()
-    if filereadable('Makefile') || filereadable('makefile')
-        set makeprg='make'
-    endif
-endfunction
-au FileType * call s:SetMakeprg()
-augroup end
-
-augroup c_cpp
-au!
-" Use the man ftplugin to display pages from manual.
-au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-au FileType c,cpp runtime ftplugin/man.vim
-" Use astyle for = command indention.
-"au FileType c,cpp exec 'setl equalprg=astyle\ --mode=c\ --options=' . $HOME . '/.vim/astyle/c-cpp.options'
-" Allow "gq" on comments to work properly.
-au FileType c,cpp setl comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,bO:///,O://
-" Go to includes.
-au FileType c,cpp nnoremap <buffer> <Leader>inc /^#include <<CR>:nohlsearch<CR>:echo<CR>
-au FileType c,cpp nnoremap <buffer> <Leader>Inc /^#include "<CR>:nohlsearch<CR>:echo<CR>
-
-autocmd FileType c,cpp inoremap ( ()<Esc>:call BC_AddChar(")")<CR>i
-autocmd FileType c,cpp inoremap { {<CR>}<Esc>:call BC_AddChar("}")<CR><Esc>kA<CR>
-autocmd FileType c,cpp inoremap [ []<Esc>:call BC_AddChar("]")<CR>i
-autocmd FileType c,cpp inoremap " ""<Esc>:call BC_AddChar("\"")<CR>i
-" jump out of parenthesis
-autocmd FileType c,cpp inoremap <C-j> <Esc>:call search(BC_GetChar(), "W")<CR>a
-
-function! BC_AddChar(schar)
- if exists("b:robstack")
- let b:robstack = b:robstack . a:schar
- else
- let b:robstack = a:schar
- endif
-endfunction
-
-function! BC_GetChar()
- let l:char = b:robstack[strlen(b:robstack)-1]
- let b:robstack = strpart(b:robstack, 0, strlen(b:robstack)-1)
- return l:char
-endfunction
-
-" Let F10 compile and run the currently edited code
-" (F10 -> use GCC, S-F10 -> use Clang).
-"au FileType c nnoremap <buffer> <F10> :w<CR>:!clear; gcc -std=c11 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
-"au FileType c nnoremap <buffer> <S-F10> :w<CR>:!clear; clang -std=c11 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
-"au FileType cpp nnoremap <buffer> <F10> :w<CR>:!clear; g++ -std=c++14 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
-"au FileType cpp nnoremap <buffer> <S-F10> :w<CR>:!clear; clang++ -std=c++14 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
 augroup end
 
 " Shell
