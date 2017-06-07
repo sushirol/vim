@@ -85,13 +85,13 @@ set statusline+=\ [\%03.3b,0x\%02.2B,U+%04B] " Codes of the character under curs
 set statusline+=\ [%l/%L\ (%p%%),%v]         " Line and column numbers.
 
 " Path/file/command completion.
-"set wildmenu
-"set wildchar=<Tab>
-"set wildmode=list:longest
-"set wildignore+=*.o,*.obj,*.pyc,*.aux,*.bbl,*.blg,.git,.svn,.hg
+set wildmenu
+set wildchar=<Tab>
+set wildmode=list:longest
+set wildignore+=*.o,*.obj,*.pyc,*.aux,*.bbl,*.blg,.git,.svn,.hg
 " Suffixes that get lower priority when doing tab completion for filenames.
 " These files are less likely to be edited.
-"set suffixes=.bak,~,.swp,.o,.info,.aux,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
+set suffixes=.bak,~,.swp,.o,.info,.aux,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
 
 " Searching.
 set hlsearch            " Highlight search matches.
