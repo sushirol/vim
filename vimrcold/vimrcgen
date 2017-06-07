@@ -19,7 +19,6 @@ let maplocalleader = ' '
 
 " reload vimrc
 map <leader>s :source ~/.vimrc<CR>
-"map <Esc><Esc> :w<CR>
 
 "------------------------------------------------------------------------------
 " General.
@@ -45,11 +44,6 @@ set showmode            " Show the current mode.
 set shortmess+=aIoOtT   " Abbreviation of messages (avoids 'hit enter ...').
 set path=$PWD/**        " Include everything under $PWD into the path.
 set nrformats-=octal    " Make incrementing 007 result into 008 rather than 010.
-
-"set expandtab     " Use spaces instead of tabs.
-"set tabstop=2     " A tab counts for  spaces.
-"set softtabstop=2 " Causes backspace to delete 4 spaces.
-"set shiftwidth=2  " Shift by 4 spaces.
 
 " Backup and swap files.
 set nobackup            " Disable backup files.
@@ -99,19 +93,55 @@ set textwidth=0         " Don't automatically wrap lines.
 " a different value, which is really annoying).
 au FileType * set textwidth=0
 
-" 80 characters line
-set colorcolumn=81
-execute "set colorcolumn=" . join(range(81,335), ',')
-highlight ColorColumn ctermbg=Black ctermfg=DarkRed
-
-" Highlight trailing spaces
-" " http://vim.wikia.com/wiki/Highlight_unwanted_spaces
-highlight ExtraWhitespace ctermbg=red guibg=red
-match ExtraWhitespace /\s\+$/
-autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-autocmd BufWinLeave * call clearmatches()
+" Tabline.
+set showtabline=1       " Display a tabline only if there are at least two tabs.
+" Use a custom function that displays tab numbers in the tabline. Based on
+" http://superuser.com/a/477221.
+function! MyTabLine()
+    let s = ''
+    let wn = ''
+    let t = tabpagenr()
+    let i = 1
+    while i <= tabpagenr('$')
+        let buflist = tabpagebuflist(i)
+        let winnr = tabpagewinnr(i)
+        let s .= '%' . i . 'T'
+        let s .= (i == t ? '%1*' : '%2*')
+        let s .= ' '
+        let wn = tabpagewinnr(i,'$')
+        let s .= '%#TabNum#'
+        let s .= i
+        let s .= (i == t ? '%#TabLineSel#' : '%#TabLine#')
+        let bufnr = buflist[winnr - 1]
+        let file = bufname(bufnr)
+        let buftype = getbufvar(bufnr, 'buftype')
+        if buftype == 'nofile'
+            if file =~ '\/.'
+                let file = substitute(file, '.*\/\ze.', '', '')
+            endif
+        else
+            " Shorten file name to include only first letters of each
+            " directory.
+            let file = pathshorten(file)
+        endif
+        if file == ''
+            let file = '[No Name]'
+        endif
+        let s .= ' ' . file . ' '
+        let i = i + 1
+        " Add '[+]' if one of the buffers in the tab page is modified.
+        for bufnr in buflist
+            if getbufvar(bufnr, '&modified')
+                let s .= '[+]'
+                break
+            endif
+        endfor
+    endwhile
+    let s .= '%T%#TabLineFill#%='
+    return s
+endfunction
+set tabline=%!MyTabLine()
+highlight link TabNum Special
 
 " Statusline.
 set laststatus=2        " Always display a statusline.
@@ -122,6 +152,13 @@ set statusline+=\ [%{(&fenc\ ==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")},%{&ff}] "
 set statusline+=\ %y                         " File type.
 set statusline+=\ [\%03.3b,0x\%02.2B,U+%04B] " Codes of the character under cursor.
 set statusline+=\ [%l/%L\ (%p%%),%v]         " Line and column numbers.
+
+" Tell Vim which characters to show for expanded tabs, trailing whitespace,
+" ends of lines, and non-breakable space.
+set listchars=tab:>-,trail:#,eol:$,nbsp:~,extends:>,precedes:<
+
+" Allow arrows at the end/beginning of lines to move to the next/previous line.
+set whichwrap+=<,>,[,]
 
 " Path/file/command completion.
 set wildmenu
@@ -166,7 +203,7 @@ set noerrorbells visualbell t_vb=
 setglobal fenc=utf-8
 " Detect file encoding when opening a file and try to choose from the following
 " encoding list (to check what file encoding was selected run ":set fenc").
-" set fencs=ucs-bom,utf-8,cp1250,latin2,latin1
+set fencs=ucs-bom,utf-8,cp1250,latin2,latin1
 " Internal encoding used by Vim buffers, help and commands.
 set enc=utf-8
 " Terminal encoding used for input and terminal display.
@@ -279,11 +316,83 @@ au BufEnter * hi clear SignColumn
 augroup end
 
 "------------------------------------------------------------------------------
+" Function keys.
+"------------------------------------------------------------------------------
+
+
+" Shift+F2: Toggle highlighting of characters exceeding textwidth.
+function! s:ToggleExceedingCharsHighlight()
+    if exists('w:long_line_match')
+        silent! call matchdelete(w:long_line_match)
+        unlet w:long_line_match
+        echo 'Disable highlighting.'
+    elseif &textwidth > 0
+        let w:long_line_match=matchadd('ExceedCharsGroup', '\%>' . &textwidth . 'v.\+', -1)
+        echo 'Enable highlighting after ' . &textwidth . ' characters.'
+    else
+        let w:long_line_match=matchadd('ExceedCharsGroup', '\%>80v.\+', -1)
+        echo 'Enable highlighting after 80 characters.'
+    endif
+endfunction
+nnoremap <silent> <S-F2> :call <SID>ToggleExceedingCharsHighlight()<CR>
+
+" F3: Toggle line wrapping.
+nnoremap <silent> <F3> :set nowrap!<CR>:set nowrap?<CR>
+
+" Shift+F3: Toggle the display of colorcolumn.
+function! s:ToggleColorColumn()
+    if &colorcolumn > 0
+        set colorcolumn=""
+    elseif &textwidth > 0
+        let &colorcolumn = &textwidth
+    else
+        set colorcolumn=80
+    endif
+endfunction
+nnoremap <silent> <S-F3> :call <SID>ToggleColorColumn()<CR>
+
+" F6: Toggle relative/absolute numbers.
+nnoremap <silent> <F6> :set relativenumber!<CR>:set relativenumber?<CR>
+
+" F9: Run tests for the given file.
+" The mapping is defined separately for each file type.
+
+" Shift+F9: Run all tests.
+" The mapping is defined separately for each file type.
+
+" F10: Run the current script.
+" The mapping is defined separately for each file type.
+
+" F11: Make.
+" Executes :make and opens the quickfix window if there is an error.
+nnoremap <F11> mp :echo 'Making...' <Bar> silent make <Bar> botright cw<CR><C-w><Up>
+
+" F8: Disabling file type based indentation for all file types
+"nnoremap <F8> :setl noai nocin nosi inde=<CR>
+
+"------------------------------------------------------------------------------
+" General-purpose commands.
+"------------------------------------------------------------------------------
+
+" Runs silently the given shell command.
+command! -nargs=1 SilentExecute execute ':silent !' . <q-args> | execute ':redraw!'
+
+"------------------------------------------------------------------------------
 " Abbreviations and other mappings.
 "------------------------------------------------------------------------------
 
+
 " General command aliases.
-cnoreabbrev csf cs find
+cnoreabbrev tn tabnew
+" Open help in a vertical window instead of in a horizontal window.
+cnoreabbrev help vert help
+" Translation. It uses https://github.com/soimort/translate-shell, which has to
+" be available in $PATH under name 'trs'.
+cnoreabbrev toen !trs cs:en
+cnoreabbrev tocs !trs en:cs
+
+" Quit with Q instead of :q!.
+noremap <silent> Q :q!<CR>
 
 " Make Ctrl-e jump to the end of the line in the insert mode.
 inoremap <C-e> <C-o>$
@@ -297,6 +406,22 @@ noremap gV `[v`]
 
 " Hitting space in normal/visual mode will make the current search disappear.
 noremap <silent> <Space> :silent nohlsearch<CR>
+
+" Insert the contents of the clipboard.
+nnoremap <silent> <Leader>P :set paste<CR>"+]P:set nopaste<CR>
+nnoremap <silent> <Leader>p :set paste<CR>"+]p:set nopaste<CR>
+vnoremap          <Leader>p "+p
+
+" Copy the selected text into the clipboard.
+noremap <Leader>y "+y
+
+" Cut the selected text into the clipboard.
+noremap <Leader>d "+d
+
+" Swap the '<letter> and `<letter> functionality because the ' character is
+" more easily reachable than the ` character.
+nnoremap ' `
+nnoremap ` '
 
 " Disable arrows keys (I use exclusively h/j/k/l).
 noremap <Up> <Nop>
@@ -314,6 +439,10 @@ inoremap <Right> <Nop>
 " Based on http://stackoverflow.com/a/21000307/2580955
 noremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 noremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
+
+" Jump to the previous/next tab.
+noremap <silent> J gT
+noremap <silent> K gt
 
 " Join lines by <Leader>+j because I use J to go to the previous tab.
 noremap <Leader>j J
@@ -334,6 +463,10 @@ noremap <silent> <Leader>J :call <SID>JoinWithoutSpaces()<CR>
 " This makes Y act more like C or D because by default, Y yanks the current
 " line (i.e. the same as yy).
 noremap Y y$
+
+" Close the opened HTML tag with Ctrl+_ (I do not use vim-closetag because it
+" often fails with an error).
+inoremap <silent> <C-_> </<C-x><C-o><C-x>
 
 " Smart window switching with awareness of Tmux panes. Now, I can use Ctrl+hjkl
 " in both Vim and Tmux (without using the prefix). Based on
@@ -365,6 +498,12 @@ else
     noremap <C-l> <C-w>l
 endif
 
+" A text object for the entire file ("a file").
+onoremap af :<C-u>normal! ggVG<CR>
+
+" Man pages.
+" The nnoremap <Leader>man command is defined for every language separately.
+
 " Check for changes in all buffers, automatically reload them, and redraw.
 nnoremap <silent> <Leader>rr :set autoread <Bar> checktime <Bar> redraw! <Bar> set noautoread<CR>
 
@@ -377,15 +516,30 @@ nnoremap <Leader>ec :%s/\<<C-r><C-w>\>/<C-r><C-w>
 vnoremap <Leader>ec y:%s/<C-r>"/<C-r>"
 
 " Replace tabs with spaces.
-" nnoremap <Leader>rts :%s/    /    /g<CR>
+nnoremap <Leader>rts :%s/    /    /g<CR>
 
 " Remove ANSI color escape codes.
 nnoremap <Leader>rac :%s/<C-v><Esc>\[\(\d\{1,2}\(;\d\{1,2}\)\{0,2\}\)\?[m\|K]//g<CR>
 
+" Makes the current file executable.
+" Based on http://vim.wikia.com/wiki/Setting_file_attributes_without_reloading_a_buffer
+function! s:MakeFileExecutable()
+    let fname = expand('%:p')
+    checktime
+    execute 'au FileChangedShell ' . fname . ' :echo'
+    silent !chmod a+x %
+    checktime
+    execute 'au! FileChangedShell ' . fname
+    " Fix display issues in terminal Vim.
+    redraw!
+endfunction
+nnoremap <Leader>mfx :call <SID>MakeFileExecutable()<CR>
+
 " Opening files in tabs.
-nnoremap <Leader>bash :e ~/.bashrc<CR>
-nnoremap <Leader>vim :e ~/.vimrc<CR>
-nnoremap <Leader>tmux :e ~/.tmux.conf<CR>
+nnoremap <Leader>sni :exec 'tabe ~/.vim/snippets/' . &filetype . '.snippets'<CR>
+nnoremap <Leader>bash :tabe ~/.bashrc<CR>
+nnoremap <Leader>vim :tabe ~/.vimrc<CR>
+nnoremap <Leader>tmux :tabe ~/.tmux.conf<CR>
 
 "------------------------------------------------------------------------------
 " Plugins.
@@ -394,65 +548,26 @@ nnoremap <Leader>tmux :e ~/.tmux.conf<CR>
 "------------------------------------------------------------------------------
 " FZF.
 "------------------------------------------------------------------------------
-"
-"let g:fzf_layout = { 'window': 'enew' }
-"let g:fzf_layout = { 'down': '~40%' }
-let g:fzf_layout = { 'window': '10split enew' }
 
+" locate command integration
+command! -nargs=1 Locate call fzf#run(
+      \ {'source': 'locate <q-args>', 'sink': 'e', 'options': '-m'})<CR>
 
-nnoremap <silent> <Leader>t :Tags<CR>
-nnoremap <silent> <leader>f :Files<CR>
-nnoremap <silent> <leader>b :Buffers<CR>
-nnoremap <silent> <leader>w :Windows<CR>
-nnoremap <silent> <leader>l :BLines<CR>
-nnoremap <silent> <leader>? :History<CR>
-nnoremap <silent> <leader>/ :execute 'Ag ' . input('Ag/')<CR>
-nnoremap <silent> <leader>. :AgIn<space>
+"Open files in horizontal split
+nnoremap <silent> <Leader>fzfh :call fzf#run({
+\   'down': '40%',
+\   'sink': 'botright split' })<CR>
 
-"------------------------------------------------------------------------------
-" FZF vim
-"------------------------------------------------------------------------------
-"
-"" This is the default extra key bindings
-let g:fzf_action = {
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-x': 'split',
-  \ 'ctrl-v': 'vsplit' }
+"" Open files in vertical horizontal split
+nnoremap <silent> <Leader>fzfv :call fzf#run({
+\   'right': winwidth('.') / 2,
+\   'sink':  'vertical botright split' })<CR>
 
-" Customize fzf colors to match your color scheme
-let g:fzf_colors =
-\ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-  \ 'hl+':     ['fg', 'Statement'],
-  \ 'info':    ['fg', 'PreProc'],
-  \ 'prompt':  ['fg', 'Conditional'],
-  \ 'pointer': ['fg', 'Exception'],
-  \ 'marker':  ['fg', 'Keyword'],
-  \ 'spinner': ['fg', 'Label'],
-  \ 'header':  ['fg', 'Comment'] }
-
-
-" Mapping selecting mappings
-nmap <leader><tab> <plug>(fzf-maps-n)
-xmap <leader><tab> <plug>(fzf-maps-x)
-omap <leader><tab> <plug>(fzf-maps-o)
-
-" Insert mode completion
-imap <c-x><c-k> <plug>(fzf-complete-word)
-imap <c-x><c-f> <plug>(fzf-complete-path)
-imap <c-x><c-j> <plug>(fzf-complete-file-ag)
-imap <c-x><c-l> <plug>(fzf-complete-line)
-
-" Advanced customization using autoload functions
-inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '13%'})
-
-nnoremap <silent> S :call SearchWordWithAg()<CR>
-function! SearchWordWithAg()
-  execute 'Ag' expand('<cword>')
-endfunction
+nnoremap <silent> <Leader>fzfo :call fzf#run({
+\  'source':  v:oldfiles,
+\  'sink':    'e',
+\  'options': '-m -x +s',
+\  'down':    '40%'})<CR>
 
 "------------------------------------------------------------------------------
 " File-type specific settings and other autocommands.
@@ -469,10 +584,94 @@ function! s:RemoveTrailingWhitespace()
     endif
     call setline(1, map(getline(1, '$'), 'substitute(v:val, "' . pattern . '", "", "")'))
 endfunction
-	au BufWritePre * :if !&bin | call s:RemoveTrailingWhitespace()
+au BufWritePre * :if !&bin | call s:RemoveTrailingWhitespace()
 " Add a new command :W that can be used to write a file without removing
 " trailing whitespace (sometimes, this is handy).
 command! W :set eventignore=BufWritePre | w | set eventignore=""
+augroup end
+
+augroup file_types
+au!
+" Consider all .tpl files as Smarty files.
+au BufNewFile,BufRead *.tpl setl ft=smarty
+" Consider all .php* files (.phps, .phpt etc.) as PHP files.
+au BufNewFile,BufRead *.php[0-9a-zA-Z] setl ft=php
+" Consider all .ll files as LLVM IR files.
+au BufNewFile,BufRead *.ll setl ft=llvm
+" Consider all .dsm files as files containing disassembly from the retdec.com
+" decompilation service.
+au BufNewFile,BufRead *.dsm setl ft=retdecdsm
+" Consider all .wsgi files as Python files.
+au BufNewFile,BufRead *.wsgi setl ft=python
+" Use Vim highlighting when editing Vimperator's configuration.
+au BufNewFile,BufRead .vimperatorrc setl ft=vim
+" Use tex filetype rather than plaintex.
+au BufNewFile,BufRead *.tex setl ft=tex
+" Use mysql filetype rather than sql.
+au BufNewFile,BufRead *.sql setl ft=mysql
+augroup end
+
+augroup makeprg
+au!
+" If there is a Makefile in the current working directory,
+" use the `make` command instead of a concrete program.
+function! s:SetMakeprg()
+    if filereadable('Makefile') || filereadable('makefile')
+        set makeprg='make'
+    endif
+endfunction
+au FileType * call s:SetMakeprg()
+augroup end
+
+" C and C++
+" The following settings are based on these guidelines:
+"  - python.org/dev/peps/pep-0008
+au FileType c,cpp setl expandtab     " Use spaces instead of tabs.
+au FileType c,cpp setl tabstop=2     " A tab counts for 4 spaces.
+au FileType c,cpp setl softtabstop=2 " Causes backspace to delete 4 spaces.
+au FileType c,cpp setl shiftwidth=2  " Shift by 4 spaces.
+
+augroup c_cpp
+au!
+" Use the man ftplugin to display pages from manual.
+au FileType c,cpp runtime ftplugin/man.vim
+" Use <Leader>man to display manual pages for the function under cursor.
+au FileType c,cpp nnoremap <buffer> <silent> <Leader>man :Man 3 <cword><CR>
+" Use astyle for = command indention.
+au FileType c,cpp exec 'setl equalprg=astyle\ --mode=c\ --options=' . $HOME . '/.vim/astyle/c-cpp.options'
+" Allow "gq" on comments to work properly.
+au FileType c,cpp setl comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,bO:///,O://
+" Go to includes.
+au FileType c,cpp nnoremap <buffer> <Leader>inc /^#include <<CR>:nohlsearch<CR>:echo<CR>
+au FileType c,cpp nnoremap <buffer> <Leader>Inc /^#include "<CR>:nohlsearch<CR>:echo<CR>
+
+autocmd FileType c,cpp inoremap ( ()<Esc>:call BC_AddChar(")")<CR>i
+autocmd FileType c,cpp inoremap { {<CR>}<Esc>:call BC_AddChar("}")<CR><Esc>kA<CR>
+autocmd FileType c,cpp inoremap [ []<Esc>:call BC_AddChar("]")<CR>i
+autocmd FileType c,cpp inoremap " ""<Esc>:call BC_AddChar("\"")<CR>i
+" jump out of parenthesis
+autocmd FileType c,cpp inoremap <C-j> <Esc>:call search(BC_GetChar(), "W")<CR>a
+
+function! BC_AddChar(schar)
+ if exists("b:robstack")
+ let b:robstack = b:robstack . a:schar
+ else
+ let b:robstack = a:schar
+ endif
+endfunction
+
+function! BC_GetChar()
+ let l:char = b:robstack[strlen(b:robstack)-1]
+ let b:robstack = strpart(b:robstack, 0, strlen(b:robstack)-1)
+ return l:char
+endfunction
+
+" Let F10 compile and run the currently edited code
+" (F10 -> use GCC, S-F10 -> use Clang).
+au FileType c nnoremap <buffer> <F10> :w<CR>:!clear; gcc -std=c11 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
+au FileType c nnoremap <buffer> <S-F10> :w<CR>:!clear; clang -std=c11 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
+au FileType cpp nnoremap <buffer> <F10> :w<CR>:!clear; g++ -std=c++14 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
+au FileType cpp nnoremap <buffer> <S-F10> :w<CR>:!clear; clang++ -std=c++14 -pedantic -Wall -Wextra -o /tmp/a.out % && /tmp/a.out<CR>
 augroup end
 
 " Shell
@@ -481,12 +680,52 @@ au!
 au FileType sh setl noexpandtab  " Use tabs instead of spaces.
 augroup end
 
+" Ruby
+augroup ruby
+au!
+" The following settings are based on these guidelines:
+"  - https://raw.github.com/chneukirchen/styleguide/master/RUBY-STYLE
+au FileType ruby setl expandtab     " Use spaces instead of tabs.
+au FileType ruby setl tabstop=2     " A tab counts for 2 spaces.
+au FileType ruby setl softtabstop=2 " Causes backspace to delete 2 spaces.
+au FileType ruby setl shiftwidth=2  " Shift by 2 spaces.
+
+" Let F10 run the currently opened script.
+au FileType ruby nnoremap <buffer> <F10> :w<CR>:!clear; ruby %<CR>
+augroup end
+
 " Git commits
 augroup gitcommit
 au!
 au FileType gitcommit setl spell     " Enable spellchecking.
-"au FileType gitcommit setl expandtab " Use spaces instead of tabs.
+au FileType gitcommit setl expandtab " Use spaces instead of tabs.
 augroup end
+
+" Markdown
+augroup markdown
+au!
+au FileType markdown setl spell         " Enable spellchecking.
+au FileType markdown setl expandtab     " Use spaces instead of tabs.
+au FileType markdown setl tabstop=2     " Lists are indented with 2 spaces.
+au FileType markdown setl softtabstop=2 " Causes backspace to delete 2 spaces.
+au FileType markdown setl shiftwidth=2  " Shift by 2 spaces.
+augroup end
+
+" set md file as a markdown file
+au BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+
+"------------------------------------------------------------------------------
+" Typos correction.
+"------------------------------------------------------------------------------
+
+" English.
+iabbrev centre center
+iabbrev fro for
+iabbrev fucntion function
+iabbrev recieve receive
+iabbrev recieved received
+iabbrev teh the
+iabbrev hte the
 
 " Command mistypes.
 nnoremap :W :w
@@ -496,8 +735,6 @@ nnoremap :Set :set
 nnoremap :Vsp :vsp
 nnoremap :Tn :tabnew
 
-set pastetoggle=<F10>
-
 "------------------------------------------------------------------------------
 " Theme
 "------------------------------------------------------------------------------
@@ -506,10 +743,23 @@ set t_Co=256   " This is may or may not needed.
 
 "set background=light
 set background=dark
-colorscheme PaperColor
-"colorscheme gruvbox
+"colorscheme PaperColor
+colorscheme gruvbox
 "let g:lightline = { 'colorscheme': 'PaperColor' }
 "let g:lightline = { 'colorscheme': 'gruvbox' }
+
+" ------------------------------------------------------------------------------
+"  fancy tmux status line
+" ------------------------------------------------------------------------------
+
+" Tmuxline configuration
+" Command :Tmuxline
+let g:tmuxline_separators = {
+    \ 'left' : '',
+    \ 'left_alt': '>',
+    \ 'right' : '',
+    \ 'right_alt' : '<',
+    \ 'space' : ' '}
 
 " ------------------------------------------------------------------------------
 "  persistant undo
