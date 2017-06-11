@@ -84,6 +84,11 @@ set statusline+=\ %y                         " File type.
 set statusline+=\ [\%03.3b,0x\%02.2B,U+%04B] " Codes of the character under cursor.
 set statusline+=\ [%l/%L\ (%p%%),%v]         " Line and column numbers.
 
+highlight fzf1 ctermfg=161 ctermbg=251
+highlight fzf2 ctermfg=23 ctermbg=251
+highlight fzf3 ctermfg=237 ctermbg=251
+set statusline+=%#fzf1#\ >\ %#fzf2#fz%#fzf3#f
+
 " Path/file/command completion.
 set wildmenu
 set wildchar=<Tab>
@@ -161,10 +166,6 @@ nnoremap <Leader>tmux :e ~/.tmux.conf<CR>
 " FZF.
 "------------------------------------------------------------------------------
 "
-"let g:fzf_layout = { 'window': 'enew' }
-"let g:fzf_layout = { 'down': '~40%' }
-let g:fzf_layout = { 'window': '10split enew' }
-
 nnoremap <silent> <Leader>t :Tags<CR>
 nnoremap <silent> <leader>f :Files<CR>
 nnoremap <silent> <leader>b :Buffers<CR>
@@ -218,6 +219,12 @@ nnoremap <silent> S :call SearchWordWithAg()<CR>
 function! SearchWordWithAg()
   execute 'Ag' expand('<cword>')
 endfunction
+
+function! s:ag_in(...)
+  call fzf#vim#ag(join(a:000[1:], ' '), extend({'dir': a:1}, g:fzf#vim#default_layout))
+endfunction
+
+command! -nargs=+ -complete=dir AgIn call s:ag_in(<f-args>)
 
 "------------------------------------------------------------------------------
 
