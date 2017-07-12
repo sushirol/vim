@@ -16,12 +16,6 @@
 [submodule "colors/vim-hybrid"]
 	path = colors/vim-hybrid
 	url = https://github.com/w0ng/vim-hybrid.git
-[submodule "themes/gruvbox"]
-	path = themes/gruvbox
-	url = https://github.com/morhetz/gruvbox.git
-[submodule "themes/papercolor-theme"]
-	path = themes/papercolor-theme
-	url = https://github.com/NLKNguyen/papercolor-theme.git
 [submodule "bundle/tagbar"]
 	path = bundle/tagbar
 	url = https://github.com/majutsushi/tagbar.git
