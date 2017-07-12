@@ -5,6 +5,9 @@
 export ZSH=/home/sushrut/.oh-my-zsh
 export EDITOR=vim
 
+LC_CTYPE=en_US.UTF-8
+LC_ALL=en_US.UTF-8
+
 # Setup cdg function
 # ------------------
 unalias cdg 2> /dev/null
@@ -75,23 +78,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git vi-mode svn)
-
-prompt_svn() {
-    local rev branch
-    if in_svn; then
-        rev=$(svn_get_rev_nr)
-        branch=$(svn_get_branch_name)
-        if [ `svn_dirty_choose_pwd 1 0` -eq 1 ]; then
-            prompt_segment yellow black
-            echo -n "$rev@$branch"
-            echo -n "±"
-        else
-            prompt_segment green black
-            echo -n "$rev@$branch"
-        fi
-    fi
-}
+plugins=(git vi-mode)
 
 source $ZSH/oh-my-zsh.sh
 

@@ -62,9 +62,9 @@ set display+=lastline   " Show as much as possible from the last shown line.
 set textwidth=0         " Don't automatically wrap lines.
 
 " 80 characters line
-set colorcolumn=81
-execute "set colorcolumn=" . join(range(81,335), ',')
-highlight ColorColumn ctermbg=Black ctermfg=DarkRed
+"set colorcolumn=81
+"execute "set colorcolumn=" . join(range(81,335), ',')
+"highlight ColorColumn ctermbg=Black ctermfg=DarkRed
 
 " Highlight trailing spaces
 " " http://vim.wikia.com/wiki/Highlight_unwanted_spaces
@@ -235,6 +235,7 @@ nnoremap :Q :q
 nnoremap :Set :set
 nnoremap :Vsp :vsp
 nnoremap :Tn :tabnew
+cmap w!! w !sudo tee >/dev/null %
 
 set pastetoggle=<F10>
 
@@ -247,7 +248,6 @@ set t_Co=256   " This is may or may not needed.
 "set background=light
 set background=dark
 colorscheme PaperColor
-"colorscheme gruvbox
 "let g:lightline = { 'colorscheme': 'PaperColor' }
 "let g:lightline = { 'colorscheme': 'gruvbox' }
 
