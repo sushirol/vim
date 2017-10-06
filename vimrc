@@ -161,6 +161,9 @@ nnoremap <Leader>tmux :e ~/.tmux.conf<CR>
 "------------------------------------------------------------------------------
 " Plugins.
 "------------------------------------------------------------------------------
+"
+"" QF
+autocmd! FileType qf nnoremap <buffer> <leader><Enter> <C-w><Enter><C-w>L
 
 "------------------------------------------------------------------------------
 " FZF.
@@ -172,13 +175,21 @@ nnoremap <silent> <leader>b :Buffers<CR>
 nnoremap <silent> <leader>w :Windows<CR>
 nnoremap <silent> <leader>l :BLines<CR>
 nnoremap <silent> <leader>? :History<CR>
-nnoremap <silent> <leader>/ :execute 'Ag ' . input('Ag/')<CR>
+"nnoremap <silent> <leader>/ :execute 'Ag ' . input('Ag/')<CR>
+"nnoremap <silent> <leader>. :AgIn<space>
+nnoremap <silent> <leader>/ :execute 'Rg ' . input('Rg/')<CR>
 nnoremap <silent> <leader>. :AgIn<space>
 
 "------------------------------------------------------------------------------
 " FZF vim
 "------------------------------------------------------------------------------
 "
+" [Tags] Command to generate tags file
+let g:fzf_tags_command = 'ctags -R'
+
+command! -bang Colors
+  \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
+
 "" This is the default extra key bindings
 let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
@@ -215,16 +226,55 @@ imap <c-x><c-l> <plug>(fzf-complete-line)
 " Advanced customization using autoload functions
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '13%'})
 
+"----------------------------------------------------------------------------
+" Ag Silversearcher
+"----------------------------------------------------------------------------
 nnoremap <silent> S :call SearchWordWithAg()<CR>
 function! SearchWordWithAg()
   execute 'Ag' expand('<cword>')
 endfunction
 
-function! s:ag_in(...)
-  call fzf#vim#ag(join(a:000[1:], ' '), extend({'dir': a:1}, g:fzf#vim#default_layout))
+command! -nargs=+ -complete=dir AgIn call s:ag_in(<f-args>)
+
+"   :Ag  - Start fzf with hidden preview window that can be enabled with "?" key
+"   :Ag! - Start fzf in fullscreen and display the preview window above
+command! -bang -nargs=* Ag
+  \ call fzf#vim#ag(<q-args>,
+  \                 <bang>0 ? fzf#vim#with_preview('up:60%')
+  \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \                 <bang>0)
+
+"----------------------------------------------------------------------------
+" Rg RipGrep
+"----------------------------------------------------------------------------
+" --column: Show column number
+" --line-number: Show line number
+" --no-heading: Do not show file headings in results
+" --fixed-strings: Search term as a literal string
+" --ignore-case: Case insensitive search
+" --no-ignore: Do not respect .gitignore, etc...
+" --hidden: Search hidden files and folders
+" --follow: Follow symlinks
+" --glob: Additional conditions for search (in this case ignore everything in the .git/ folder)
+" --color: Search color options
+
+nnoremap <silent> S :call SearchWordWithRg()<CR>
+function! SearchWordWithRg()
+  execute 'Rg' expand('<cword>')
 endfunction
 
-command! -nargs=+ -complete=dir AgIn call s:ag_in(<f-args>)
+command! -nargs=+ -complete=dir RgIn call s:ag_in(<f-args>)
+
+command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
+
+"   :Rg  - Start fzf with hidden preview window that can be enabled with "?" key
+"   :Rg! - Start fzf in fullscreen and display the preview window above
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
 
 "------------------------------------------------------------------------------
 
@@ -245,8 +295,8 @@ set pastetoggle=<F10>
 
 set t_Co=256   " This is may or may not needed.
 
-"set background=light
-set background=dark
+set background=light
+"set background=dark
 colorscheme PaperColor
 "let g:lightline = { 'colorscheme': 'PaperColor' }
 "let g:lightline = { 'colorscheme': 'gruvbox' }
