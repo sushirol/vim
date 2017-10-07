@@ -6,7 +6,10 @@ export ZSH=/home/sushrut/.oh-my-zsh
 export EDITOR=vim
 
 LC_CTYPE=en_US.UTF-8
-LC_ALL=en_US.UTF-8
+#LC_ALL=en_US.UTF-8
+#export FZF_DEFAULT_COMMAND='ag -g ""'
+#export FZF_DEFAULT_COMMAND='ag --hidden --ignore linux-4.10.1 -g ""'
+export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
 
 # Setup cdg function
 # ------------------
@@ -30,9 +33,13 @@ bm () {
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 ZSH_THEME="robbyrussell"
 #ZSH_THEME="random"
-#ZSH_THEME="agnoster"
 #ZSH_THEME="sorin"
-#ZSH_THEME="sushrut"
+
+#pure prompt
+#autoload -U promptinit; promptinit
+#ZSH_THEME=""
+#PURE_CMD_MAX_EXEC_TIME=10
+#prompt pure
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -64,7 +71,7 @@ ZSH_THEME="robbyrussell"
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
 # much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 # Uncomment the following line if you want to change the command execution time
 # stamp shown in the history command output.
@@ -111,5 +118,10 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 export TERM=screen-256color
+
+function git_prompt_info() {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+  echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}${ZSH_THEME_GIT_PROMPT_CLEAN}${ZSH_THEME_GIT_PROMPT_SUFFIX}"
+}
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

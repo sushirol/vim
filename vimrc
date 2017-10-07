@@ -178,7 +178,7 @@ nnoremap <silent> <leader>? :History<CR>
 "nnoremap <silent> <leader>/ :execute 'Ag ' . input('Ag/')<CR>
 "nnoremap <silent> <leader>. :AgIn<space>
 nnoremap <silent> <leader>/ :execute 'Rg ' . input('Rg/')<CR>
-nnoremap <silent> <leader>. :AgIn<space>
+nnoremap <silent> <leader>. :RgIn<space>
 
 "------------------------------------------------------------------------------
 " FZF vim
@@ -229,20 +229,20 @@ inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '13%'})
 "----------------------------------------------------------------------------
 " Ag Silversearcher
 "----------------------------------------------------------------------------
-nnoremap <silent> S :call SearchWordWithAg()<CR>
-function! SearchWordWithAg()
-  execute 'Ag' expand('<cword>')
-endfunction
+"nnoremap <silent> S :call SearchWordWithAg()<CR>
+"function! SearchWordWithAg()
+  "execute 'Ag' expand('<cword>')
+"endfunction
 
-command! -nargs=+ -complete=dir AgIn call s:ag_in(<f-args>)
+"command! -nargs=+ -complete=dir AgIn call s:ag_in(<f-args>)
 
 "   :Ag  - Start fzf with hidden preview window that can be enabled with "?" key
 "   :Ag! - Start fzf in fullscreen and display the preview window above
-command! -bang -nargs=* Ag
-  \ call fzf#vim#ag(<q-args>,
-  \                 <bang>0 ? fzf#vim#with_preview('up:60%')
-  \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
-  \                 <bang>0)
+"command! -bang -nargs=* Ag
+  "\ call fzf#vim#ag(<q-args>,
+  "\                 <bang>0 ? fzf#vim#with_preview('up:60%')
+  "\                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+  "\                 <bang>0)
 
 "----------------------------------------------------------------------------
 " Rg RipGrep
@@ -263,7 +263,7 @@ function! SearchWordWithRg()
   execute 'Rg' expand('<cword>')
 endfunction
 
-command! -nargs=+ -complete=dir RgIn call s:ag_in(<f-args>)
+command! -nargs=+ -complete=dir RgIn call s:rg_in(<f-args>)
 
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
 
@@ -284,7 +284,6 @@ nnoremap :E :e
 nnoremap :Q :q
 nnoremap :Set :set
 nnoremap :Vsp :vsp
-nnoremap :Tn :tabnew
 cmap w!! w !sudo tee >/dev/null %
 
 set pastetoggle=<F10>
