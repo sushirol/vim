@@ -1,9 +1,6 @@
 [submodule "bundle/lightline.vim"]
 	path = bundle/lightline.vim
 	url = https://github.com/itchyny/lightline.vim.git
-[submodule "bundle/supertab"]
-	path = bundle/supertab
-	url = https://github.com/ervandew/supertab.git
 [submodule "bundle/fzf"]
 	path = bundle/fzf
 	url = https://github.com/junegunn/fzf.git
@@ -38,3 +35,6 @@
 [submodule "bundle/ripgrep"]
 	path = bundle/ripgrep
 	url = git://github.com/BurntSushi/ripgrep
+[submodule "vim-better-whitespace"]
+	path = bundle/vim-better-whitespace
+	url = git://github.com/ntpeters/vim-better-whitespace.git

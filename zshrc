@@ -1,5 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$PATH:$HOME/.local/bin/
 
 # Path to your oh-my-zsh installation.
 export ZSH=/home/sushrut/.oh-my-zsh
@@ -9,7 +10,8 @@ LC_CTYPE=en_US.UTF-8
 #LC_ALL=en_US.UTF-8
 #export FZF_DEFAULT_COMMAND='ag -g ""'
 #export FZF_DEFAULT_COMMAND='ag --hidden --ignore linux-4.10.1 -g ""'
-export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
+#export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
+export FZF_DEFAULT_COMMAND='rg --files --glob ""'
 
 # Setup cdg function
 # ------------------
@@ -85,7 +87,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git vi-mode)
+plugins=(zsh-autosuggestions zsh-syntax-highlighting colorize git vi-mode cp wd fabric)
 
 source $ZSH/oh-my-zsh.sh
 

@@ -226,6 +226,8 @@ imap <c-x><c-l> <plug>(fzf-complete-line)
 " Advanced customization using autoload functions
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '13%'})
 
+set complete=.,w,b,u
+
 "----------------------------------------------------------------------------
 " Ag Silversearcher
 "----------------------------------------------------------------------------
@@ -294,9 +296,10 @@ set pastetoggle=<F10>
 
 set t_Co=256   " This is may or may not needed.
 
-set background=light
-"set background=dark
+"set background=light
+set background=dark
 colorscheme PaperColor
+"colorscheme gruvbox
 "let g:lightline = { 'colorscheme': 'PaperColor' }
 "let g:lightline = { 'colorscheme': 'gruvbox' }
 
@@ -316,3 +319,9 @@ if has('persistent_undo')
     let &undodir = myUndoDir
     set undofile
 endif
+
+"--------------------------------------------------------------------------------
+" Tell vim-whitespace to strip whitespace on save
+au VimEnter * EnableStripWhitespaceOnSave
+" Tell vim-whitespace to disable the current line highlightin
+au VimEnter * CurrentLineWhitespaceOff soft
